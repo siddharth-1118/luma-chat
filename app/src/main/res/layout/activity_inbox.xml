@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:id="@+id/btnBack"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:text="‹"
+                android:textSize="34sp"
+                android:gravity="center"
+                android:textColor="@color/midnight_navy"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Inbox"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="@color/midnight_navy"/>
+
+            <TextView
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:text="⌕"
+                android:textSize="28sp"
+                android:gravity="center"
+                android:textColor="@color/midnight_navy"/>
+
+        </LinearLayout>
+
+        <!-- Subtitle -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Your conversations, all in one place."
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginStart="45dp"
+            android:layout_marginBottom="22dp"/>
+
+        <!-- Search -->
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:hint="Search conversations..."
+            android:padding="14dp"
+            android:singleLine="true"
+            android:textSize="14sp"
+            android:background="@drawable/input_field"/>
+
+        <!-- Filters -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:paddingHorizontal="24dp"
+                android:gravity="center"
+                android:text="All"
+                android:textColor="@color/card_white"
+                android:textStyle="bold"
+                android:background="@drawable/button_background"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:paddingHorizontal="20dp"
+                android:gravity="center"
+                android:text="Unread"
+                android:textColor="@color/midnight_navy"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/input_field"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="38dp"
+                android:paddingHorizontal="20dp"
+                android:gravity="center"
+                android:text="Pinned"
+                android:textColor="@color/midnight_navy"
+                android:layout_marginStart="10dp"
+                android:background="@drawable/input_field"/>
+
+        </LinearLayout>
+
+        <!-- Conversation List -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/chat1"
+                    layout="@layout/chat_item" />
+
+                <include
+                    android:id="@+id/chat2"
+                    layout="@layout/chat_item" />
+
+                <include
+                    android:id="@+id/chat3"
+                    layout="@layout/chat_item" />
+
+                <include
+                    android:id="@+id/chat4"
+                    layout="@layout/chat_item" />
+
+            </LinearLayout>
+        </ScrollView>
+
+    </LinearLayout>
+
+    <!-- New Chat Button -->
+    <TextView
+        android:id="@+id/btnNewChat"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        android:gravity="center"
+        android:text="+"
+        android:textSize="32sp"
+        android:textColor="@color/card_white"
+        android:background="@drawable/button_background"/>
+
+</FrameLayout>

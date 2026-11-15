@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/btnBackMoments"
+                android:layout_width="45dp"
+                android:layout_height="wrap_content"
+                android:text="‹"
+                android:textSize="36sp"
+                android:textColor="@color/midnight_navy" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Moments"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="@color/midnight_navy" />
+
+            <TextView
+                android:id="@+id/btnAddMoment"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:gravity="center"
+                android:text="+"
+                android:textSize="28sp"
+                android:textColor="@color/midnight_navy"
+                android:background="@drawable/input_field" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Little moments, lovely memories."
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="18dp" />
+
+        <!-- My story -->
+        <LinearLayout
+            android:id="@+id/btnMyStory"
+            android:layout_width="match_parent"
+            android:layout_height="105dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp"
+            android:background="@drawable/button_background">
+
+            <TextView
+                android:layout_width="62dp"
+                android:layout_height="62dp"
+                android:gravity="center"
+                android:text="H"
+                android:textSize="25sp"
+                android:textStyle="bold"
+                android:textColor="@color/midnight_navy"
+                android:background="@drawable/card_background" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingStart="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="My Status"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/midnight_navy" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Share what's happening today"
+                    android:textSize="12sp"
+                    android:textColor="@color/midnight_navy"
+                    android:layout_marginTop="5dp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:gravity="center"
+                android:text="+"
+                android:textSize="25sp"
+                android:textColor="@color/midnight_navy"
+                android:background="@drawable/card_background" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Friends' Stories"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/midnight_navy"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Horizontal stories -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="112dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="78dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="58dp"
+                        android:layout_height="58dp"
+                        android:gravity="center"
+                        android:text="A"
+                        android:textSize="23sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/midnight_navy"
+                        android:background="@drawable/button_background" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ananya"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="5dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="78dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="58dp"
+                        android:layout_height="58dp"
+                        android:gravity="center"
+                        android:text="S"
+                        android:textSize="23sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/midnight_navy"
+                        android:background="@drawable/button_background" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sravani"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="5dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="78dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="58dp"
+                        android:layout_height="58dp"
+                        android:gravity="center"
+                        android:text="P"
+                        android:textSize="23sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/midnight_navy"
+                        android:background="@drawable/button_background" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Priya"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="5dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="78dp"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="58dp"
+                        android:layout_height="58dp"
+                        android:gravity="center"
+                        android:text="R"
+                        android:textSize="23sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/midnight_navy"
+                        android:background="@drawable/button_background" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rahul"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginTop="5dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Recent Moments"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/midnight_navy"
+            android:layout_marginTop="22dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Two-column moment cards -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="175dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="7dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/card_background">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🌸"
+                    android:textSize="48sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ananya"
+                    android:textStyle="bold"
+                    android:textColor="@color/midnight_navy"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2 hours ago"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="175dp"
+                android:layout_weight="1"
+                android:layout_marginStart="7dp"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/card_background">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🌅"
+                    android:textSize="48sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sravani"
+                    android:textStyle="bold"
+                    android:textColor="@color/midnight_navy"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4 hours ago"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="175dp"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@drawable/card_background"
+            android:layout_marginTop="14dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="☕"
+                android:textSize="48sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Priya • Coffee time"
+                android:textStyle="bold"
+                android:textColor="@color/midnight_navy"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Yesterday"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

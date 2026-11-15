@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Main LumaChat Colours -->
+    <color name="lavender">#CDB8F6</color>
+    <color name="light_lavender">#E9DFFC</color>
+    <color name="midnight_navy">#19152F</color>
+    <color name="ivory">#FFF9ED</color>
+    <color name="soft_peach">#F4B9A9</color>
+
+    <!-- Supporting Colours -->
+    <color name="background">#FFF9ED</color>
+    <color name="card_white">#FFFFFF</color>
+    <color name="text_primary">#19152F</color>
+    <color name="text_secondary">#77718A</color>
+    <color name="input_background">#F1ECFA</color>
+    <color name="border_color">#E5DDF0</color>
+
+</resources>
