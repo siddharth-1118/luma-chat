@@ -28,6 +28,8 @@ const tcpClients = new Set();
 const sseClients = new Set();
 // Message history for display and polling fallback (max 300)
 const messageHistory = [];
+// Call signals buffer for polling fallback (max 50)
+const recentCalls = [];
 
 // Online Users Registry: userId -> { userId, name, avatar, bio, status, lastSeen, ip }
 const onlineUsers = new Map();
@@ -363,9 +365,16 @@ const httpServer = http.createServer((req, res) => {
             return true;
         });
 
+        const newCalls = recentCalls.filter(c => {
+            if (c.timestamp <= since) return false;
+            if (excludeSender && c.senderName === excludeSender) return false;
+            return true;
+        });
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
             messages: newMessages,
+            calls: newCalls,
             users: getActiveUsersList(),
             serverTime: Date.now()
         }));
@@ -382,6 +391,9 @@ const httpServer = http.createServer((req, res) => {
 
                 // Handle Call Signals (offer, answer, reject, end)
                 if (data.type && data.type.startsWith('call_')) {
+                    recentCalls.push(data);
+                    if (recentCalls.length > 50) recentCalls.shift();
+
                     const jsonLine = JSON.stringify(data);
                     broadcastToPhones(jsonLine);
                     broadcastToWeb('call', data);

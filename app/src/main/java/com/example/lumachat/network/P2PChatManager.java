@@ -425,7 +425,7 @@ public class P2PChatManager {
                                 JSONObject json = new JSONObject(data);
                                 if (json.has("users")) {
                                     parseAndDispatchUsers(json.getJSONArray("users"));
-                                } else if (json.has("text")) {
+                                } else if (json.has("text") || (json.has("type") && json.optString("type").startsWith("call_"))) {
                                     handleIncomingJson(json);
                                 }
                             } catch (Exception ignored) {}
@@ -470,6 +470,13 @@ public class P2PChatManager {
                             for (int i = 0; i < arr.length(); i++) {
                                 JSONObject msgJson = arr.getJSONObject(i);
                                 handleIncomingJson(msgJson);
+                            }
+                        }
+                        JSONArray callArr = resp.optJSONArray("calls");
+                        if (callArr != null) {
+                            for (int i = 0; i < callArr.length(); i++) {
+                                JSONObject callJson = callArr.getJSONObject(i);
+                                handleIncomingJson(callJson);
                             }
                         }
                     }
