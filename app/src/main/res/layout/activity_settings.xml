@@ -42,6 +42,7 @@
             android:layout_marginTop="15dp">
 
             <TextView
+                android:id="@+id/tvSettingsAvatar"
                 android:layout_width="58dp"
                 android:layout_height="58dp"
                 android:gravity="center"
@@ -58,6 +59,7 @@
                 android:paddingStart="15dp">
 
                 <TextView
+                    android:id="@+id/tvSettingsName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Harshitha"

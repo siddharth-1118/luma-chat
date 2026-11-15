@@ -59,12 +59,15 @@
 
         <!-- Search -->
         <EditText
+            android:id="@+id/etInboxSearch"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:hint="Search conversations..."
             android:padding="14dp"
             android:singleLine="true"
             android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_secondary"
             android:background="@drawable/input_field"/>
 
         <!-- Filters -->
@@ -77,16 +80,18 @@
             android:layout_marginBottom="16dp">
 
             <TextView
+                android:id="@+id/tabAll"
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
                 android:paddingHorizontal="24dp"
                 android:gravity="center"
                 android:text="All"
-                android:textColor="@color/card_white"
+                android:textColor="@color/midnight_navy"
                 android:textStyle="bold"
                 android:background="@drawable/button_background"/>
 
             <TextView
+                android:id="@+id/tabUnread"
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
                 android:paddingHorizontal="20dp"
@@ -97,6 +102,7 @@
                 android:background="@drawable/input_field"/>
 
             <TextView
+                android:id="@+id/tabPinned"
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
                 android:paddingHorizontal="20dp"
@@ -108,6 +114,18 @@
 
         </LinearLayout>
 
+        <!-- Empty State -->
+        <TextView
+            android:id="@+id/tvEmptyInbox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="32dp"
+            android:text="No conversations found.\nTap '+' to start a new chat!"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
         <!-- Conversation List -->
         <ScrollView
             android:layout_width="match_parent"
@@ -115,27 +133,10 @@
             android:layout_weight="1">
 
             <LinearLayout
+                android:id="@+id/conversationListContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <include
-                    android:id="@+id/chat1"
-                    layout="@layout/chat_item" />
-
-                <include
-                    android:id="@+id/chat2"
-                    layout="@layout/chat_item" />
-
-                <include
-                    android:id="@+id/chat3"
-                    layout="@layout/chat_item" />
-
-                <include
-                    android:id="@+id/chat4"
-                    layout="@layout/chat_item" />
-
-            </LinearLayout>
+                android:orientation="vertical" />
         </ScrollView>
 
     </LinearLayout>

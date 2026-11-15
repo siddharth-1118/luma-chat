@@ -42,6 +42,7 @@
             android:layout_marginTop="16dp">
 
             <TextView
+                android:id="@+id/tvPersonalAvatar"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:gravity="center"
@@ -62,6 +63,7 @@
                 android:layout_marginTop="12dp"/>
 
             <TextView
+                android:id="@+id/tvPersonalBio"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Making memories, one message at a time ✨"
@@ -98,6 +100,7 @@
                 android:layout_marginEnd="5dp">
 
                 <TextView
+                    android:id="@+id/tvTotalChats"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="24"
@@ -123,6 +126,7 @@
                 android:layout_marginHorizontal="5dp">
 
                 <TextView
+                    android:id="@+id/tvTotalGroups"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="6"

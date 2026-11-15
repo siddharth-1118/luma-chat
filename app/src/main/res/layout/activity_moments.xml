@@ -63,6 +63,7 @@
             android:background="@drawable/button_background">
 
             <TextView
+                android:id="@+id/tvMyStatusAvatar"
                 android:layout_width="62dp"
                 android:layout_height="62dp"
                 android:gravity="center"
@@ -80,6 +81,7 @@
                 android:paddingStart="14dp">
 
                 <TextView
+                    android:id="@+id/tvMyStatusTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="My Status"
@@ -88,6 +90,7 @@
                     android:textColor="@color/midnight_navy" />
 
                 <TextView
+                    android:id="@+id/tvMyStatusSubtitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Share what's happening today"
@@ -123,110 +126,10 @@
             android:scrollbars="none">
 
             <LinearLayout
+                android:id="@+id/storiesReelContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:orientation="horizontal">
-
-                <LinearLayout
-                    android:layout_width="78dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="58dp"
-                        android:layout_height="58dp"
-                        android:gravity="center"
-                        android:text="A"
-                        android:textSize="23sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/midnight_navy"
-                        android:background="@drawable/button_background" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Ananya"
-                        android:textSize="11sp"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginTop="5dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="78dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="58dp"
-                        android:layout_height="58dp"
-                        android:gravity="center"
-                        android:text="S"
-                        android:textSize="23sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/midnight_navy"
-                        android:background="@drawable/button_background" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Sravani"
-                        android:textSize="11sp"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginTop="5dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="78dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="58dp"
-                        android:layout_height="58dp"
-                        android:gravity="center"
-                        android:text="P"
-                        android:textSize="23sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/midnight_navy"
-                        android:background="@drawable/button_background" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Priya"
-                        android:textSize="11sp"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginTop="5dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="78dp"
-                    android:layout_height="match_parent"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:layout_width="58dp"
-                        android:layout_height="58dp"
-                        android:gravity="center"
-                        android:text="R"
-                        android:textSize="23sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/midnight_navy"
-                        android:background="@drawable/button_background" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Rahul"
-                        android:textSize="11sp"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginTop="5dp" />
-                </LinearLayout>
-            </LinearLayout>
+                android:orientation="horizontal" />
         </HorizontalScrollView>
 
         <TextView
@@ -239,105 +142,12 @@
             android:layout_marginTop="22dp"
             android:layout_marginBottom="12dp" />
 
-        <!-- Two-column moment cards -->
+        <!-- Recent Moments Feed -->
         <LinearLayout
+            android:id="@+id/momentsFeedContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="2">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="175dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="7dp"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:background="@drawable/card_background">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🌸"
-                    android:textSize="48sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Ananya"
-                    android:textStyle="bold"
-                    android:textColor="@color/midnight_navy"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2 hours ago"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="11sp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="175dp"
-                android:layout_weight="1"
-                android:layout_marginStart="7dp"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:background="@drawable/card_background">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🌅"
-                    android:textSize="48sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Sravani"
-                    android:textStyle="bold"
-                    android:textColor="@color/midnight_navy"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="4 hours ago"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="11sp" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="175dp"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:background="@drawable/card_background"
-            android:layout_marginTop="14dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="☕"
-                android:textSize="48sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Priya • Coffee time"
-                android:textStyle="bold"
-                android:textColor="@color/midnight_navy"
-                android:textSize="14sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Yesterday"
-                android:textColor="@color/text_secondary"
-                android:textSize="11sp" />
-        </LinearLayout>
+            android:orientation="vertical" />
 
     </LinearLayout>
 </ScrollView>

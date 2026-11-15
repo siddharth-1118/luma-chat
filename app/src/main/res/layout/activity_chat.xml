@@ -19,7 +19,9 @@
             android:layout_height="wrap_content"
             android:text="‹"
             android:textSize="36sp"
-            android:textColor="@color/midnight_navy" />
+            android:textColor="@color/midnight_navy"
+            android:clickable="true"
+            android:focusable="true" />
 
         <TextView
             android:id="@+id/tvChatAvatar"
@@ -49,6 +51,7 @@
                 android:textSize="16sp" />
 
             <TextView
+                android:id="@+id/tvChatStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Online"
@@ -57,11 +60,26 @@
         </LinearLayout>
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="☎   ⋮"
+            android:id="@+id/btnCallChat"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="☎"
             android:textSize="20sp"
-            android:textColor="@color/midnight_navy" />
+            android:textColor="@color/midnight_navy"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btnMenuChat"
+            android:layout_width="32dp"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:text="⋮"
+            android:textSize="20sp"
+            android:textColor="@color/midnight_navy"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 
     <View
@@ -83,49 +101,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingTop="18dp"
-            android:paddingBottom="18dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="TODAY"
-                android:textSize="11sp"
-                android:textColor="@color/text_secondary"
-                android:padding="10dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Hey! How are you?"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                android:background="@drawable/card_background"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="I'm good! How about you?"
-                android:textColor="@color/midnight_navy"
-                android:textSize="15sp"
-                android:background="@drawable/button_background"
-                android:padding="14dp"
-                android:layout_gravity="end"
-                android:layout_marginBottom="12dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Doing great! 😊"
-                android:textColor="@color/text_primary"
-                android:textSize="15sp"
-                android:background="@drawable/card_background"
-                android:padding="14dp"
-                android:layout_marginBottom="12dp" />
-
-        </LinearLayout>
+            android:paddingBottom="18dp" />
     </ScrollView>
 
     <!-- Message composer -->
@@ -138,12 +114,15 @@
         android:paddingHorizontal="10dp">
 
         <TextView
+            android:id="@+id/btnAttach"
             android:layout_width="35dp"
             android:layout_height="wrap_content"
             android:text="＋"
             android:textSize="24sp"
             android:textColor="@color/midnight_navy"
-            android:gravity="center" />
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true" />
 
         <EditText
             android:id="@+id/etMessage"
@@ -165,7 +144,9 @@
             android:text="➤"
             android:textSize="21sp"
             android:textColor="@color/midnight_navy"
-            android:background="@drawable/button_background" />
+            android:background="@drawable/button_background"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 
 </LinearLayout>

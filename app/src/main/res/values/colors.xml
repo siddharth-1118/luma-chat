@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- Main LumaChat Colours -->
     <color name="lavender">#CDB8F6</color>
     <color name="light_lavender">#E9DFFC</color>
@@ -16,4 +15,10 @@
     <color name="input_background">#F1ECFA</color>
     <color name="border_color">#E5DDF0</color>
 
+    <!-- Accent and Functional Colours -->
+    <color name="green_status">#58B88A</color>
+    <color name="red_danger">#E55353</color>
+    <color name="bubble_sent_bg">#D7C5F9</color>
+    <color name="bubble_received_bg">#FFFFFF</color>
+    <color name="surface_highlight">#F4EEFD</color>
 </resources>

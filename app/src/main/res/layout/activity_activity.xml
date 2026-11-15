@@ -98,18 +98,23 @@
                 android:textColor="@color/text_secondary"/>
         </LinearLayout>
 
+        <!-- Empty State -->
+        <TextView
+            android:id="@+id/tvEmptyCalls"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="32dp"
+            android:text="No call records found."
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:visibility="gone" />
+
         <LinearLayout
             android:id="@+id/callList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="16dp">
-
-            <include layout="@layout/call_item"/>
-            <include layout="@layout/call_item"/>
-            <include layout="@layout/call_item"/>
-            <include layout="@layout/call_item"/>
-
-        </LinearLayout>
+            android:layout_marginTop="16dp" />
     </LinearLayout>
 </ScrollView>
