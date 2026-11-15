@@ -8,8 +8,10 @@ import android.os.Looper;
 import android.text.format.Formatter;
 
 import com.example.lumachat.data.DatabaseHelper;
+import com.example.lumachat.data.UserPreferences;
 import com.example.lumachat.model.Conversation;
 import com.example.lumachat.model.Message;
+import com.example.lumachat.model.OnlineUser;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -26,9 +28,11 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 public class P2PChatManager {
@@ -39,6 +43,10 @@ public class P2PChatManager {
 
     public interface OnPeerStatusListener {
         void onStatusChanged(boolean isConnected, String message);
+    }
+
+    public interface OnOnlineUsersListener {
+        void onUsersUpdated(List<OnlineUser> users);
     }
 
     public enum Mode {
@@ -61,6 +69,7 @@ public class P2PChatManager {
     private volatile boolean isHttpPollingActive = false;
     private Thread sseThread;
     private Thread pollThread;
+    private Thread heartbeatThread;
 
     private Mode currentMode = Mode.NONE;
     private boolean isConnected = false;
@@ -69,8 +78,12 @@ public class P2PChatManager {
     // Message deduplication
     private final Set<String> processedKeys = Collections.synchronizedSet(new LinkedHashSet<>());
 
+    // Online Users list
+    private final List<OnlineUser> onlineUsers = new ArrayList<>();
+
     private OnMessageReceivedListener messageListener;
     private OnPeerStatusListener statusListener;
+    private OnOnlineUsersListener usersListener;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private Context appContext;
 
@@ -91,6 +104,21 @@ public class P2PChatManager {
 
     public void setStatusListener(OnPeerStatusListener listener) {
         this.statusListener = listener;
+    }
+
+    public void setUsersListener(OnOnlineUsersListener listener) {
+        this.usersListener = listener;
+        if (usersListener != null) {
+            synchronized (onlineUsers) {
+                usersListener.onUsersUpdated(new ArrayList<>(onlineUsers));
+            }
+        }
+    }
+
+    public List<OnlineUser> getOnlineUsers() {
+        synchronized (onlineUsers) {
+            return new ArrayList<>(onlineUsers);
+        }
     }
 
     public boolean isConnected() {
@@ -162,6 +190,7 @@ public class P2PChatManager {
                 isConnected = true;
                 notifyStatus(true, "Peer connected: " + connectedPeerIp);
 
+                registerWithServer();
                 listenForIncomingTcp();
             } catch (Exception e) {
                 currentMode = Mode.NONE;
@@ -172,7 +201,7 @@ public class P2PChatManager {
     }
 
     // ==========================================
-    // 2. CONNECT TO PEER (AUTO DETECT HTTP OR TCP)
+    // 2. CONNECT TO PEER / SERVER
     // ==========================================
     public void connectToPeer(String rawInput, int defaultPort) {
         if (rawInput == null || rawInput.trim().isEmpty()) return;
@@ -184,7 +213,6 @@ public class P2PChatManager {
 
         disconnect();
 
-        // Check if user provided an HTTP / Cloud URL (like Ngrok)
         boolean isHttp = input.startsWith("http://") || input.startsWith("https://")
                 || input.contains("ngrok") || input.contains(".dev") || input.contains(".app")
                 || input.contains(".page") || (input.contains(".") && !input.matches("^[0-9.:]+$") && !input.contains(":"));
@@ -213,7 +241,6 @@ public class P2PChatManager {
             notifyStatus(false, "Connecting to Cloud Relay: " + baseUrl + "...");
 
             try {
-                // Test connectivity with /status
                 URL statusUrl = new URL(baseUrl + "/status");
                 HttpURLConnection conn = (HttpURLConnection) statusUrl.openConnection();
                 conn.setRequestMethod("GET");
@@ -237,14 +264,18 @@ public class P2PChatManager {
                     currentMode = Mode.HTTP_RELAY;
                     isConnected = true;
                     connectedPeerIp = ngrokUrl;
-                    lastSeenTimestamp = System.currentTimeMillis() - 60000; // fetch recent messages
+                    lastSeenTimestamp = System.currentTimeMillis() - 60000;
 
                     notifyStatus(true, "Connected to Cloud Relay ✨ (" + ngrokUrl + ")");
 
-                    // Start background SSE & polling sync
+                    // Register this phone's profile with the server
+                    registerWithServer();
+
+                    // Start background SSE, polling, & heartbeat
                     isHttpPollingActive = true;
                     startSseListener(baseUrl);
                     startPollingFallback(baseUrl);
+                    startHeartbeatLoop();
                 } else {
                     isConnected = false;
                     currentMode = Mode.NONE;
@@ -258,6 +289,107 @@ public class P2PChatManager {
         }).start();
     }
 
+    // Register user profile on the server
+    public void registerWithServer() {
+        if (!isConnected || appContext == null) return;
+        String userId = UserPreferences.getUserId(appContext);
+        String name = UserPreferences.getUserName(appContext);
+        String avatar = UserPreferences.getUserAvatar(appContext);
+        String bio = UserPreferences.getUserBio(appContext);
+
+        updateMyProfile(userId, name, avatar, bio);
+    }
+
+    public void updateMyProfile(String userId, String name, String avatar, String bio) {
+        new Thread(() -> {
+            try {
+                if (currentMode == Mode.HTTP_RELAY && !httpBaseUrl.isEmpty()) {
+                    URL regUrl = new URL(httpBaseUrl + "/register");
+                    HttpURLConnection conn = (HttpURLConnection) regUrl.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    conn.setRequestProperty("User-Agent", "LumaChat-Android");
+                    conn.setRequestProperty("ngrok-skip-browser-warning", "true");
+                    conn.setDoOutput(true);
+                    conn.setConnectTimeout(6000);
+                    conn.setReadTimeout(6000);
+
+                    JSONObject json = new JSONObject();
+                    json.put("userId", userId);
+                    json.put("name", name);
+                    json.put("avatar", avatar);
+                    json.put("bio", bio);
+                    json.put("status", "online");
+
+                    OutputStream os = conn.getOutputStream();
+                    os.write(json.toString().getBytes("UTF-8"));
+                    os.flush();
+                    os.close();
+
+                    if (conn.getResponseCode() == 200) {
+                        BufferedReader r = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = r.readLine()) != null) sb.append(line);
+                        r.close();
+
+                        JSONObject resp = new JSONObject(sb.toString());
+                        JSONArray arr = resp.optJSONArray("users");
+                        if (arr != null) {
+                            parseAndDispatchUsers(arr);
+                        }
+                    }
+                } else if ((currentMode == Mode.DIRECT_TCP || currentMode == Mode.SERVER_TCP) && outWriter != null) {
+                    JSONObject json = new JSONObject();
+                    json.put("type", "register");
+                    json.put("userId", userId);
+                    json.put("name", name);
+                    json.put("avatar", avatar);
+                    json.put("bio", bio);
+                    outWriter.println(json.toString());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    private void startHeartbeatLoop() {
+        heartbeatThread = new Thread(() -> {
+            while (isHttpPollingActive && isConnected) {
+                try {
+                    Thread.sleep(15000); // 15s heartbeat
+                    if (!isHttpPollingActive || !isConnected) break;
+
+                    if (currentMode == Mode.HTTP_RELAY && !httpBaseUrl.isEmpty() && appContext != null) {
+                        URL hbUrl = new URL(httpBaseUrl + "/heartbeat");
+                        HttpURLConnection conn = (HttpURLConnection) hbUrl.openConnection();
+                        conn.setRequestMethod("POST");
+                        conn.setRequestProperty("Content-Type", "application/json");
+                        conn.setRequestProperty("User-Agent", "LumaChat-Android");
+                        conn.setRequestProperty("ngrok-skip-browser-warning", "true");
+                        conn.setDoOutput(true);
+                        conn.setConnectTimeout(5000);
+
+                        JSONObject json = new JSONObject();
+                        json.put("userId", UserPreferences.getUserId(appContext));
+
+                        OutputStream os = conn.getOutputStream();
+                        os.write(json.toString().getBytes("UTF-8"));
+                        os.flush();
+                        os.close();
+                        conn.getResponseCode();
+                    } else if (outWriter != null) {
+                        JSONObject json = new JSONObject();
+                        json.put("type", "heartbeat");
+                        outWriter.println(json.toString());
+                    }
+                } catch (Exception ignored) {}
+            }
+        });
+        heartbeatThread.start();
+    }
+
     private void startSseListener(String baseUrl) {
         sseThread = new Thread(() -> {
             while (isHttpPollingActive && isConnected) {
@@ -268,7 +400,7 @@ public class P2PChatManager {
                     conn.setRequestProperty("Accept", "text/event-stream");
                     conn.setRequestProperty("User-Agent", "LumaChat-Android");
                     conn.setRequestProperty("ngrok-skip-browser-warning", "true");
-                    conn.setReadTimeout(0); // keep alive stream
+                    conn.setReadTimeout(0);
 
                     InputStream in = conn.getInputStream();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(in));
@@ -278,14 +410,15 @@ public class P2PChatManager {
                             String data = line.substring(6).trim();
                             try {
                                 JSONObject json = new JSONObject(data);
-                                if (json.has("text")) {
+                                if (json.has("users")) {
+                                    parseAndDispatchUsers(json.getJSONArray("users"));
+                                } else if (json.has("text")) {
                                     handleIncomingJson(json);
                                 }
                             } catch (Exception ignored) {}
                         }
                     }
                 } catch (Exception e) {
-                    // Reconnect after brief pause
                     try { Thread.sleep(3000); } catch (Exception ignored) {}
                 }
             }
@@ -316,6 +449,9 @@ public class P2PChatManager {
                         r.close();
 
                         JSONObject resp = new JSONObject(sb.toString());
+                        if (resp.has("users")) {
+                            parseAndDispatchUsers(resp.getJSONArray("users"));
+                        }
                         JSONArray arr = resp.optJSONArray("messages");
                         if (arr != null) {
                             for (int i = 0; i < arr.length(); i++) {
@@ -328,6 +464,42 @@ public class P2PChatManager {
             }
         });
         pollThread.start();
+    }
+
+    private void parseAndDispatchUsers(JSONArray arr) {
+        try {
+            List<OnlineUser> list = new ArrayList<>();
+            String myUserId = (appContext != null) ? UserPreferences.getUserId(appContext) : "";
+
+            for (int i = 0; i < arr.length(); i++) {
+                JSONObject obj = arr.getJSONObject(i);
+                String uid = obj.optString("userId", "");
+                String name = obj.optString("name", "Friend");
+                String avatar = obj.optString("avatar", "🌸");
+                String bio = obj.optString("bio", "");
+                String status = obj.optString("status", "online");
+                boolean online = obj.optBoolean("isOnline", true);
+                long lastSeen = obj.optLong("lastSeen", System.currentTimeMillis());
+
+                // Exclude myself from the friend discovery list
+                if (!uid.equals(myUserId)) {
+                    list.add(new OnlineUser(uid, name, avatar, bio, status, online, lastSeen));
+                }
+            }
+
+            synchronized (onlineUsers) {
+                onlineUsers.clear();
+                onlineUsers.addAll(list);
+            }
+
+            mainHandler.post(() -> {
+                if (usersListener != null) {
+                    usersListener.onUsersUpdated(list);
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // ==========================================
@@ -359,6 +531,8 @@ public class P2PChatManager {
                 isConnected = true;
                 notifyStatus(true, "Connected to: " + connectedPeerIp);
 
+                registerWithServer();
+                startHeartbeatLoop();
                 listenForIncomingTcp();
             } catch (Exception e) {
                 currentMode = Mode.NONE;
@@ -379,7 +553,11 @@ public class P2PChatManager {
             while ((line = inReader.readLine()) != null) {
                 try {
                     JSONObject json = new JSONObject(line);
-                    handleIncomingJson(json);
+                    if (json.has("type") && json.optString("type").equals("user_list")) {
+                        parseAndDispatchUsers(json.getJSONArray("users"));
+                    } else {
+                        handleIncomingJson(json);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -411,7 +589,6 @@ public class P2PChatManager {
                 if (processedKeys.contains(dedupeKey)) return;
                 processedKeys.add(dedupeKey);
                 if (processedKeys.size() > 500) {
-                    // Evict oldest
                     String first = processedKeys.iterator().next();
                     processedKeys.remove(first);
                 }
@@ -466,7 +643,6 @@ public class P2PChatManager {
             return false;
         }
 
-        // Record key so sender doesn't re-dispatch own message if received via poll/SSE
         String dedupeKey = message.getSenderName() + "_" + message.getTimestamp() + "_" + message.getMessageText();
         synchronized (processedKeys) {
             processedKeys.add(dedupeKey);
@@ -540,6 +716,10 @@ public class P2PChatManager {
             pollThread.interrupt();
             pollThread = null;
         }
+        if (heartbeatThread != null) {
+            heartbeatThread.interrupt();
+            heartbeatThread = null;
+        }
 
         try {
             if (outWriter != null) outWriter.close();
@@ -553,6 +733,13 @@ public class P2PChatManager {
         clientSocket = null;
         serverSocket = null;
 
+        synchronized (onlineUsers) {
+            onlineUsers.clear();
+        }
+
         notifyStatus(false, "Disconnected");
+        if (usersListener != null) {
+            mainHandler.post(() -> usersListener.onUsersUpdated(new ArrayList<>()));
+        }
     }
 }

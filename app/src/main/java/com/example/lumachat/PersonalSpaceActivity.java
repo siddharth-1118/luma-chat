@@ -122,6 +122,9 @@ public class PersonalSpaceActivity extends AppCompatActivity {
             UserPreferences.setUserAvatar(this, newAvatar);
             UserPreferences.setUserBio(this, newBio);
 
+            String userId = UserPreferences.getUserId(this);
+            com.example.lumachat.network.P2PChatManager.getInstance().updateMyProfile(userId, newName, newAvatar, newBio);
+
             dialog.dismiss();
             loadProfileData();
             Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();

@@ -29,6 +29,40 @@ const sseClients = new Set();
 // Message history for display and polling fallback (max 300)
 const messageHistory = [];
 
+// Online Users Registry: userId -> { userId, name, avatar, bio, status, lastSeen, ip }
+const onlineUsers = new Map();
+
+function getActiveUsersList() {
+    const now = Date.now();
+    const list = [];
+    for (const [id, user] of onlineUsers.entries()) {
+        if (now - user.lastSeen < 45000) {
+            list.push({
+                userId: user.userId,
+                name: user.name,
+                avatar: user.avatar || '🌸',
+                bio: user.bio || '',
+                status: user.status || 'online',
+                isOnline: true,
+                lastSeen: user.lastSeen
+            });
+        } else {
+            onlineUsers.delete(id);
+        }
+    }
+    return list;
+}
+
+// Cleanup inactive users every 10 seconds
+setInterval(() => {
+    const beforeCount = onlineUsers.size;
+    const list = getActiveUsersList();
+    if (list.length !== beforeCount) {
+        broadcastToWeb('user_list', { users: list });
+        broadcastToPhones(JSON.stringify({ type: 'user_list', users: list }));
+    }
+}, 10000);
+
 let activeNgrokUrl = '';
 
 // Check ngrok local management API for active public tunnel URL
@@ -85,6 +119,8 @@ function logActivity(text) {
 const tcpServer = net.createServer((socket) => {
     const remote = `${socket.remoteAddress}:${socket.remotePort}`;
     tcpClients.add(socket);
+    let boundUserId = null;
+
     logActivity(`📱 Android Phone Connected from ${remote}`);
     broadcastToWeb('clientsCount', { count: tcpClients.size, sseCount: sseClients.size });
 
@@ -93,7 +129,7 @@ const tcpServer = net.createServer((socket) => {
     socket.on('data', (chunk) => {
         buffer += chunk.toString('utf-8');
         let lines = buffer.split('\n');
-        buffer = lines.pop(); // Keep partial line in buffer
+        buffer = lines.pop();
 
         for (const line of lines) {
             const clean = line.trim();
@@ -101,6 +137,35 @@ const tcpServer = net.createServer((socket) => {
 
             try {
                 const msg = JSON.parse(clean);
+
+                // Handle registration packet from TCP phone
+                if (msg.type === 'register') {
+                    boundUserId = msg.userId || `tcp_${Date.now()}`;
+                    onlineUsers.set(boundUserId, {
+                        userId: boundUserId,
+                        name: msg.name || 'Friend',
+                        avatar: msg.avatar || '📱',
+                        bio: msg.bio || 'Connected via TCP',
+                        status: 'online',
+                        lastSeen: Date.now(),
+                        ip: remote
+                    });
+                    logActivity(`👤 [TCP Online] ${msg.name} (${msg.avatar}) registered!`);
+                    const usersList = getActiveUsersList();
+                    broadcastToWeb('user_list', { users: usersList });
+                    socket.write(JSON.stringify({ type: 'user_list', users: usersList }) + '\n');
+                    continue;
+                }
+
+                // Handle heartbeat packet
+                if (msg.type === 'heartbeat') {
+                    if (boundUserId && onlineUsers.has(boundUserId)) {
+                        onlineUsers.get(boundUserId).lastSeen = Date.now();
+                    }
+                    continue;
+                }
+
+                // Normal chat message
                 logActivity(`💬 [TCP] Message from ${msg.senderName || 'Phone'}: "${msg.text}"`);
 
                 const entry = {
@@ -128,7 +193,12 @@ const tcpServer = net.createServer((socket) => {
 
     socket.on('close', () => {
         tcpClients.delete(socket);
-        logActivity(`❌ Android Phone Disconnected: ${remote}`);
+        if (boundUserId && onlineUsers.has(boundUserId)) {
+            const u = onlineUsers.get(boundUserId);
+            onlineUsers.delete(boundUserId);
+            logActivity(`❌ [Offline] ${u.name} disconnected`);
+            broadcastToWeb('user_list', { users: getActiveUsersList() });
+        }
         broadcastToWeb('clientsCount', { count: tcpClients.size, sseCount: sseClients.size });
     });
 
@@ -152,7 +222,7 @@ tcpServer.listen(TCP_PORT, '0.0.0.0', () => {
 // 2. HTTP WEB SERVER & RELAY (Port 8080)
 // ==========================================
 const httpServer = http.createServer((req, res) => {
-    // Add Universal CORS headers
+    // Universal CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, ngrok-skip-browser-warning, User-Agent');
@@ -173,14 +243,88 @@ const httpServer = http.createServer((req, res) => {
         res.end(JSON.stringify({
             status: 'online',
             app: 'LumaChat Relay',
-            version: '2.0',
+            version: '2.1',
             tcpPort: TCP_PORT,
             httpPort: HTTP_PORT,
             localIp: `${primaryIp}:${TCP_PORT}`,
             ngrokUrl: activeNgrokUrl || null,
             tcpClients: tcpClients.size,
             sseClients: sseClients.size,
+            onlineUsersCount: getActiveUsersList().length,
+            onlineUsers: getActiveUsersList(),
             totalMessages: messageHistory.length,
+            serverTime: Date.now()
+        }));
+        return;
+    }
+
+    // Register User Endpoint: POST /register
+    if (pathname === '/register' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                const userId = data.userId || `user_${Date.now()}`;
+                const name = data.name || 'Anonymous User';
+                const avatar = data.avatar || '🌸';
+                const bio = data.bio || 'LumaChat User';
+                const status = data.status || 'online';
+
+                onlineUsers.set(userId, {
+                    userId,
+                    name,
+                    avatar,
+                    bio,
+                    status,
+                    lastSeen: Date.now(),
+                    ip: req.socket.remoteAddress
+                });
+
+                logActivity(`👤 [Online Registered] ${name} (${avatar}) joined from city/network!`);
+
+                const usersList = getActiveUsersList();
+                // Broadcast to Web & HTTP SSE clients
+                broadcastToWeb('user_list', { users: usersList });
+                // Broadcast to TCP phones
+                broadcastToPhones(JSON.stringify({ type: 'user_list', users: usersList }));
+
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, users: usersList }));
+            } catch (err) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: err.message }));
+            }
+        });
+        return;
+    }
+
+    // Heartbeat Endpoint: POST /heartbeat
+    if (pathname === '/heartbeat' && req.method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+            try {
+                const data = JSON.parse(body);
+                const userId = data.userId;
+                if (userId && onlineUsers.has(userId)) {
+                    onlineUsers.get(userId).lastSeen = Date.now();
+                }
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true }));
+            } catch (err) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: err.message }));
+            }
+        });
+        return;
+    }
+
+    // Get Active Users: GET /users
+    if (pathname === '/users' && req.method === 'GET') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+            users: getActiveUsersList(),
             serverTime: Date.now()
         }));
         return;
@@ -196,8 +340,10 @@ const httpServer = http.createServer((req, res) => {
         res.write('\n');
         sseClients.add(res);
 
-        // Send initial stats
+        // Send initial stats and online user list
+        const currentUsers = getActiveUsersList();
         res.write(`event: clientsCount\ndata: ${JSON.stringify({ count: tcpClients.size, sseCount: sseClients.size, ngrokUrl: activeNgrokUrl })}\n\n`);
+        res.write(`event: user_list\ndata: ${JSON.stringify({ users: currentUsers })}\n\n`);
 
         req.on('close', () => {
             sseClients.delete(res);
@@ -220,6 +366,7 @@ const httpServer = http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
             messages: newMessages,
+            users: getActiveUsersList(),
             serverTime: Date.now()
         }));
         return;
@@ -354,8 +501,46 @@ const httpServer = http.createServer((req, res) => {
     }
     .copy-btn:hover { background: #7C5CBF; color: #FFF; }
 
+    /* Users Tray */
+    .user-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 10px;
+    }
+    .user-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: #F1ECFA;
+        border: 1px solid #CDB8F6;
+        padding: 8px 16px;
+        border-radius: 30px;
+        font-size: 13px;
+        color: #19152F;
+        transition: transform 0.2s;
+    }
+    .user-pill:hover { transform: scale(1.03); }
+    .user-avatar-circle {
+        width: 34dp;
+        height: 34dp;
+        border-radius: 50%;
+        background: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .online-dot {
+        width: 8px;
+        height: 8px;
+        background: #4CAF50;
+        border-radius: 50%;
+    }
+
     .chat-box {
-        height: 340px;
+        height: 320px;
         overflow-y: auto;
         padding: 16px;
         background: #FFF9ED;
@@ -424,19 +609,9 @@ const httpServer = http.createServer((req, res) => {
         color: #E9DFFC;
         padding: 14px;
         border-radius: 16px;
-        height: 130px;
+        height: 120px;
         overflow-y: auto;
     }
-    .step-card {
-        background: #F8F5FD;
-        border-radius: 16px;
-        padding: 16px 20px;
-        margin-top: 14px;
-        font-size: 13px;
-        line-height: 1.6;
-        color: #4A4458;
-    }
-    .step-card ol { margin-left: 20px; }
 </style>
 </head>
 <body>
@@ -444,8 +619,8 @@ const httpServer = http.createServer((req, res) => {
 <div class="container">
     <div class="header">
         <div>
-            <h2>✨ LumaChat Relay Server & Cloud Hub</h2>
-            <p style="font-size: 12px; color: #77718A; margin-top: 4px;">Enabling real-time two-person chat across local Wi-Fi & different cities</p>
+            <h2>✨ LumaChat Relay Server &amp; User Directory</h2>
+            <p style="font-size: 12px; color: #77718A; margin-top: 4px;">Live Discovery of Connected Friends Across Cities</p>
         </div>
         <div class="status-badge">● SERVER ACTIVE</div>
     </div>
@@ -455,38 +630,37 @@ const httpServer = http.createServer((req, res) => {
             <div class="info-label">🌍 PUBLIC NGROK URL (FOR OTHER CITIES)</div>
             <div class="info-val" id="ngrokDisplay">${activeNgrokUrl || 'Loading Ngrok URL...'}</div>
             <button class="copy-btn" onclick="copyText(document.getElementById('ngrokDisplay').innerText)">📋 Copy Cloud URL</button>
-            <p style="font-size: 11px; color: #9A5A4A; margin-top: 6px;">Share this URL with friend in another city!</p>
+            <p style="font-size: 11px; color: #9A5A4A; margin-top: 6px;">Share this URL with friends in any city!</p>
         </div>
         <div class="info-box">
             <div class="info-label">🏠 LOCAL WI-FI IP (FOR SAME HOUSE/ROOM)</div>
             <div class="info-val">${primaryIp}:${TCP_PORT}</div>
             <button class="copy-btn" onclick="copyText('${primaryIp}:${TCP_PORT}')">📋 Copy Local IP</button>
-            <p style="font-size: 11px; color: #77718A; margin-top: 6px;">Use when both phones are on same Wi-Fi</p>
+            <p style="font-size: 11px; color: #77718A; margin-top: 6px;">Use when phones are on same Wi-Fi</p>
         </div>
         <div class="info-box">
-            <div class="info-label">👥 CONNECTED DEVICES</div>
-            <div class="info-val" id="clientCount">0 Devices Connected</div>
-            <p style="font-size: 11px; color: #77718A; margin-top: 6px;">Phones active on TCP & HTTP relay</p>
+            <div class="info-label">👥 ONLINE USERS ACTIVE</div>
+            <div class="info-val" id="clientCount">0 User(s) Online</div>
+            <p style="font-size: 11px; color: #77718A; margin-top: 6px;">Registered users currently online</p>
         </div>
     </div>
 
-    <!-- Instructions Card -->
+    <!-- Active Connected Users Directory -->
     <div class="card">
-        <h3>🚀 How to Chat with Someone in Another City:</h3>
-        <div class="step-card">
-            <ol>
-                <li>Install <b>LumaChat.apk</b> on both phones (your phone & your friend's phone).</li>
-                <li>Tap <b>Live P2P Chat 🌐</b> icon in the top header (or tap 🌐 on any chat screen).</li>
-                <li>In the box, paste the <b>Public Cloud URL</b> shown above (e.g. <span id="hintUrl">${activeNgrokUrl || 'https://...ngrok-free.dev'}</span>).</li>
-                <li>Tap <b>Connect to Friend</b> on both phones.</li>
-                <li>Start chatting! Messages will instantly fly across cities in real time! ✨</li>
-            </ol>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h3>🟢 Live Connected Users Directory</h3>
+            <span style="font-size: 12px; color: #77718A;" id="userCountBadge">0 registered</span>
+        </div>
+        <p style="font-size: 12px; color: #77718A; margin-top: 4px;">Every person who installs the app and connects appears here with their chosen profile name and avatar!</p>
+        
+        <div class="user-list" id="userListContainer">
+            <div style="color: #77718A; font-size: 13px; padding: 8px;">No users currently online. Open LumaChat on phone and tap Connect!</div>
         </div>
     </div>
 
     <!-- Live Test Chat with Phones -->
     <div class="card">
-        <h3 style="margin-bottom: 8px;">💬 Live Chat Console</h3>
+        <h3 style="margin-bottom: 8px;">💬 Live Chat Feed</h3>
         <p style="font-size: 12px; color: #77718A; margin-bottom: 12px;">Send and receive real-time messages directly with connected phones right from this browser tab!</p>
         
         <div class="chat-box" id="chatBox">
@@ -507,7 +681,7 @@ const httpServer = http.createServer((req, res) => {
     <div class="card">
         <h4 style="margin-bottom: 8px;">📋 Relay Activity Logs</h4>
         <div class="logs" id="logBox">
-            <div>[Ready] TCP Socket Server listening on port ${TCP_PORT}...</div>
+            <div>[Ready] User Directory &amp; TCP Socket Server listening on port ${TCP_PORT}...</div>
             <div>[Ready] HTTP / SSE Cloud Server listening on port ${HTTP_PORT}...</div>
         </div>
     </div>
@@ -517,21 +691,47 @@ const httpServer = http.createServer((req, res) => {
     const chatBox = document.getElementById('chatBox');
     const logBox = document.getElementById('logBox');
     const clientCount = document.getElementById('clientCount');
+    const userCountBadge = document.getElementById('userCountBadge');
+    const userListContainer = document.getElementById('userListContainer');
     const pcInput = document.getElementById('pcInput');
     const ngrokDisplay = document.getElementById('ngrokDisplay');
-    const hintUrl = document.getElementById('hintUrl');
 
     const evtSource = new EventSource('/events');
 
     evtSource.addEventListener('clientsCount', (e) => {
         const data = JSON.parse(e.data);
-        const total = (data.count || 0) + (data.sseCount || 0);
-        clientCount.textContent = total + ' Device(s) Connected';
         if (data.ngrokUrl) {
             ngrokDisplay.textContent = data.ngrokUrl;
-            hintUrl.textContent = data.ngrokUrl;
         }
     });
+
+    evtSource.addEventListener('user_list', (e) => {
+        const data = JSON.parse(e.data);
+        renderUserList(data.users || []);
+    });
+
+    function renderUserList(users) {
+        clientCount.textContent = users.length + ' User(s) Online';
+        userCountBadge.textContent = users.length + ' registered online';
+        
+        if (users.length === 0) {
+            userListContainer.innerHTML = '<div style="color: #77718A; font-size: 13px; padding: 8px;">No users currently online. Open LumaChat on phone and tap Connect!</div>';
+            return;
+        }
+
+        userListContainer.innerHTML = '';
+        users.forEach(u => {
+            const pill = document.createElement('div');
+            pill.className = 'user-pill';
+            pill.innerHTML = '<div class="online-dot"></div>' +
+                             '<div style="font-size: 18px;">' + (u.avatar || '🌸') + '</div>' +
+                             '<div>' +
+                                 '<strong>' + escapeHtml(u.name) + '</strong>' +
+                                 (u.bio ? '<div style="font-size: 11px; color: #77718A;">' + escapeHtml(u.bio) + '</div>' : '') +
+                             '</div>';
+            userListContainer.appendChild(pill);
+        });
+    }
 
     evtSource.addEventListener('log', (e) => {
         const data = JSON.parse(e.data);

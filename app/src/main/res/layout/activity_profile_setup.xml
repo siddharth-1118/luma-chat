@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="26dp"
+        android:gravity="center_horizontal">
+
+        <!-- Header Sparkle -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✨"
+            android:textSize="40sp"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome to LumaChat"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="@color/midnight_navy"
+            android:layout_marginTop="8dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Set up your profile so your friends in any city can recognize you when you connect!"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center"
+            android:lineSpacingExtra="3dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Big Avatar Preview Circle -->
+        <FrameLayout
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/tvSetupAvatarPreview"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:background="@drawable/button_background"
+                android:gravity="center"
+                android:text="🌸"
+                android:textSize="44sp" />
+
+            <TextView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_gravity="bottom|end"
+                android:background="@drawable/card_background"
+                android:gravity="center"
+                android:text="✏️"
+                android:textSize="13sp" />
+        </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="TAP AN AVATAR TO CHOOSE:"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_secondary"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="10dp" />
+
+        <!-- Quick Avatar Picker Chips -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginBottom="22dp">
+
+            <LinearLayout
+                android:id="@+id/layoutAvatarChips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical" />
+        </HorizontalScrollView>
+
+        <!-- Name Input -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="YOUR DISPLAY NAME *"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:letterSpacing="0.05"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/etSetupName"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="@drawable/input_field"
+                android:hint="Enter your name (e.g. Siddharth, Priya)"
+                android:paddingHorizontal="16dp"
+                android:singleLine="true"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_secondary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Bio / Status Input -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="28dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="YOUR BIO / STATUS"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:letterSpacing="0.05"
+                android:layout_marginBottom="6dp" />
+
+            <EditText
+                android:id="@+id/etSetupBio"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:background="@drawable/input_field"
+                android:hint="Status (e.g. Chilling in Delhi ✨)"
+                android:paddingHorizontal="16dp"
+                android:singleLine="true"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_secondary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <!-- Continue Button -->
+        <TextView
+            android:id="@+id/btnCompleteProfile"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:background="@drawable/button_background"
+            android:gravity="center"
+            android:text="Get Started &amp; Connect 🚀"
+            android:textColor="@color/midnight_navy"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvSkipSetup"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:text="You can always change your profile in Personal Space"
+            android:textSize="11sp"
+            android:textColor="@color/text_secondary" />
+
+    </LinearLayout>
+</ScrollView>

@@ -31,6 +31,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         super.onCreate(savedInstanceState);
+
+        // First-run profile setup check
+        if (!UserPreferences.isProfileSetupComplete(this)) {
+            Intent intent = new Intent(this, ProfileSetupActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
 
         tvHeaderAvatar = findViewById(R.id.tvHeaderAvatar);

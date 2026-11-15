@@ -58,6 +58,37 @@
         android:textSize="14sp"
         android:singleLine="true" />
 
+    <!-- Active Online Friends Section -->
+    <LinearLayout
+        android:id="@+id/layoutDialogOnlineFriends"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="14dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OR TAP AN ACTIVE ONLINE FRIEND:"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_secondary"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="6dp" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/dialogOnlineChipsContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
+    </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -15,10 +15,20 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
+import android.text.TextUtils;
+import android.view.Gravity;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+
 import com.example.lumachat.data.DatabaseHelper;
 import com.example.lumachat.data.UserPreferences;
 import com.example.lumachat.model.Conversation;
 import com.example.lumachat.model.Message;
+import com.example.lumachat.model.OnlineUser;
+import com.example.lumachat.network.P2PChatManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -31,6 +41,8 @@ public class InboxActivity extends AppCompatActivity {
     private TextView tvEmptyInbox;
     private EditText etInboxSearch;
     private TextView tabAll, tabUnread, tabPinned;
+    private LinearLayout onlineUsersContainer;
+    private TextView tvOnlineCountBadge;
 
     private String currentFilter = "All";
     private String currentSearch = "";
@@ -45,6 +57,8 @@ public class InboxActivity extends AppCompatActivity {
         conversationListContainer = findViewById(R.id.conversationListContainer);
         tvEmptyInbox = findViewById(R.id.tvEmptyInbox);
         etInboxSearch = findViewById(R.id.etInboxSearch);
+        onlineUsersContainer = findViewById(R.id.onlineUsersContainer);
+        tvOnlineCountBadge = findViewById(R.id.tvOnlineCountBadge);
 
         tabAll = findViewById(R.id.tabAll);
         tabUnread = findViewById(R.id.tabUnread);
@@ -57,6 +71,10 @@ public class InboxActivity extends AppCompatActivity {
         // New Chat FAB
         findViewById(R.id.btnNewChat).setOnClickListener(v -> showNewChatDialog());
         findViewById(R.id.btnP2PInbox).setOnClickListener(v -> showP2PDialog());
+
+        P2PChatManager p2p = P2PChatManager.getInstance();
+        p2p.init(this);
+        p2p.setUsersListener(users -> runOnUiThread(() -> renderOnlineUsers(users)));
 
         // Search listener
         etInboxSearch.addTextChangedListener(new TextWatcher() {
@@ -85,6 +103,128 @@ public class InboxActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         loadConversations();
+
+        P2PChatManager p2p = P2PChatManager.getInstance();
+        p2p.init(this);
+        if (!p2p.isConnected()) {
+            String lastSaved = p2p.getLastSavedAddress(this);
+            if (lastSaved != null && !lastSaved.isEmpty()) {
+                p2p.connectToPeer(lastSaved, P2PChatManager.DEFAULT_PORT);
+            }
+        }
+        renderOnlineUsers(p2p.getOnlineUsers());
+    }
+
+    private void renderOnlineUsers(List<OnlineUser> users) {
+        if (onlineUsersContainer == null) return;
+        onlineUsersContainer.removeAllViews();
+
+        if (users == null || users.isEmpty()) {
+            tvOnlineCountBadge.setText("0 Online");
+            TextView prompt = new TextView(this);
+            prompt.setText("🌐 Tap to Connect to Server & Discover Friends");
+            prompt.setTextSize(11);
+            prompt.setTextColor(Color.parseColor("#7C5CBF"));
+            prompt.setBackgroundResource(R.drawable.input_field);
+            prompt.setPadding(dpToPx(14), dpToPx(8), dpToPx(14), dpToPx(8));
+            prompt.setOnClickListener(v -> showP2PDialog());
+            onlineUsersContainer.addView(prompt);
+            return;
+        }
+
+        tvOnlineCountBadge.setText(users.size() + " Online");
+
+        for (OnlineUser user : users) {
+            View card = createOnlineUserCard(user);
+            onlineUsersContainer.addView(card);
+        }
+    }
+
+    private View createOnlineUserCard(OnlineUser user) {
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.VERTICAL);
+        card.setGravity(Gravity.CENTER_HORIZONTAL);
+        LinearLayout.LayoutParams cardLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        cardLp.setMargins(dpToPx(4), dpToPx(2), dpToPx(10), dpToPx(4));
+        card.setLayoutParams(cardLp);
+        card.setPadding(dpToPx(6), dpToPx(6), dpToPx(6), dpToPx(6));
+
+        // Frame with avatar and online green dot
+        FrameLayout frame = new FrameLayout(this);
+        frame.setLayoutParams(new LinearLayout.LayoutParams(dpToPx(52), dpToPx(52)));
+
+        TextView tvAvatar = new TextView(this);
+        tvAvatar.setLayoutParams(new FrameLayout.LayoutParams(dpToPx(52), dpToPx(52)));
+        tvAvatar.setGravity(Gravity.CENTER);
+        tvAvatar.setText(user.getAvatar());
+        tvAvatar.setTextSize(24);
+        tvAvatar.setBackgroundResource(R.drawable.button_background);
+
+        TextView tvDot = new TextView(this);
+        FrameLayout.LayoutParams dotLp = new FrameLayout.LayoutParams(dpToPx(13), dpToPx(13));
+        dotLp.gravity = Gravity.BOTTOM | Gravity.END;
+        tvDot.setLayoutParams(dotLp);
+        GradientDrawable dotBg = new GradientDrawable();
+        dotBg.setShape(GradientDrawable.OVAL);
+        dotBg.setColor(Color.parseColor("#4CAF50"));
+        dotBg.setStroke(dpToPx(2), Color.WHITE);
+        tvDot.setBackground(dotBg);
+
+        frame.addView(tvAvatar);
+        frame.addView(tvDot);
+
+        // Name
+        TextView tvName = new TextView(this);
+        tvName.setText(user.getName());
+        tvName.setTextSize(11);
+        tvName.setTypeface(null, Typeface.BOLD);
+        tvName.setTextColor(Color.parseColor("#19152F"));
+        tvName.setGravity(Gravity.CENTER);
+        tvName.setMaxLines(1);
+        tvName.setEllipsize(TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams nameLp = new LinearLayout.LayoutParams(
+                dpToPx(60), ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        nameLp.setMargins(0, dpToPx(4), 0, 0);
+        tvName.setLayoutParams(nameLp);
+
+        card.addView(frame);
+        card.addView(tvName);
+
+        // Click to open or create 1-on-1 chat
+        card.setOnClickListener(v -> {
+            String convId = "chat_" + user.getUserId();
+            DatabaseHelper db = DatabaseHelper.getInstance(this);
+            Conversation conv = db.getConversation(convId);
+            if (conv == null) {
+                String time = new SimpleDateFormat("h:mm a", Locale.getDefault()).format(new Date());
+                conv = new Conversation(
+                        convId, user.getName(), user.getAvatar(), false, "",
+                        user.getBio().isEmpty() ? "Connected online" : user.getBio(),
+                        time, 0, false, "Online", System.currentTimeMillis()
+                );
+                db.insertConversation(conv);
+                loadConversations();
+            }
+
+            Intent intent = new Intent(InboxActivity.this, ChatActivity.class);
+            intent.putExtra("id", convId);
+            intent.putExtra("name", user.getName());
+            intent.putExtra("avatar", user.getAvatar());
+            intent.putExtra("is_group", false);
+            intent.putExtra("status", "Online");
+            startActivity(intent);
+        });
+
+        return card;
+    }
+
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
     }
 
     private void selectFilter(String filter) {
@@ -196,6 +336,36 @@ public class InboxActivity extends AppCompatActivity {
         EditText etName = dialogView.findViewById(R.id.etNewChatName);
         EditText etAvatar = dialogView.findViewById(R.id.etNewChatAvatar);
         EditText etMsg = dialogView.findViewById(R.id.etNewChatMessage);
+
+        // Populate online friends chips if any
+        LinearLayout dialogChips = dialogView.findViewById(R.id.dialogOnlineChipsContainer);
+        List<OnlineUser> online = P2PChatManager.getInstance().getOnlineUsers();
+        if (online.isEmpty()) {
+            dialogView.findViewById(R.id.layoutDialogOnlineFriends).setVisibility(View.GONE);
+        } else {
+            dialogView.findViewById(R.id.layoutDialogOnlineFriends).setVisibility(View.VISIBLE);
+            dialogChips.removeAllViews();
+            for (OnlineUser u : online) {
+                TextView chip = new TextView(this);
+                chip.setText("● " + u.getAvatar() + " " + u.getName());
+                chip.setTextSize(12);
+                chip.setTextColor(Color.parseColor("#19152F"));
+                chip.setBackgroundResource(R.drawable.button_background);
+                chip.setPadding(dpToPx(12), dpToPx(6), dpToPx(12), dpToPx(6));
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                lp.setMargins(0, 0, dpToPx(8), 0);
+                chip.setLayoutParams(lp);
+
+                chip.setOnClickListener(v -> {
+                    etName.setText(u.getName());
+                    etAvatar.setText(u.getAvatar());
+                });
+                dialogChips.addView(chip);
+            }
+        }
 
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(dialogView)
