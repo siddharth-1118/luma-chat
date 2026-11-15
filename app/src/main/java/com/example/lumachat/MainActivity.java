@@ -133,6 +133,11 @@ public class MainActivity extends AppCompatActivity {
         String myIp = p2p.getLocalIpAddress(this);
         tvMyIp.setText(myIp + " : " + com.example.lumachat.network.P2PChatManager.DEFAULT_PORT);
 
+        String lastSaved = p2p.getLastSavedAddress(this);
+        if (lastSaved != null && !lastSaved.isEmpty()) {
+            etPeerIp.setText(lastSaved);
+        }
+
         androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setView(dialogView)
                 .create();

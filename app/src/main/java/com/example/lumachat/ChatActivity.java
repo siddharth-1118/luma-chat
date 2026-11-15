@@ -471,6 +471,11 @@ public class ChatActivity extends AppCompatActivity implements P2PChatManager.On
         String myIp = p2pManager.getLocalIpAddress(this);
         tvMyIp.setText(myIp + " : " + P2PChatManager.DEFAULT_PORT);
 
+        String lastSaved = p2pManager.getLastSavedAddress(this);
+        if (lastSaved != null && !lastSaved.isEmpty()) {
+            etPeerIp.setText(lastSaved);
+        }
+
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(dialogView)
                 .create();
