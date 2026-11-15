@@ -1,6 +1,7 @@
 package com.example.lumachat.network;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
@@ -32,6 +33,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.LinkedHashSet;
+import com.example.lumachat.call.CallRingtoneManager;
+import com.example.lumachat.notification.LumaNotificationManager;
+
 import java.util.List;
 import java.util.Set;
 
@@ -47,6 +51,10 @@ public class P2PChatManager {
 
     public interface OnOnlineUsersListener {
         void onUsersUpdated(List<OnlineUser> users);
+    }
+
+    public interface OnCallSignalListener {
+        void onCallSignal(String signalType, String callType, String callId, String senderName, String senderAvatar);
     }
 
     public enum Mode {
@@ -84,6 +92,7 @@ public class P2PChatManager {
     private OnMessageReceivedListener messageListener;
     private OnPeerStatusListener statusListener;
     private OnOnlineUsersListener usersListener;
+    private OnCallSignalListener callListener;
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private Context appContext;
 
@@ -113,6 +122,10 @@ public class P2PChatManager {
                 usersListener.onUsersUpdated(new ArrayList<>(onlineUsers));
             }
         }
+    }
+
+    public void setCallListener(OnCallSignalListener listener) {
+        this.callListener = listener;
     }
 
     public List<OnlineUser> getOnlineUsers() {
@@ -570,18 +583,62 @@ public class P2PChatManager {
     }
 
     // ==========================================
-    // 5. INCOMING MESSAGE DISPATCHER & DEDUPLICATION
+    // 5. INCOMING MESSAGE DISPATCHER & CALL SIGNALING
     // ==========================================
     private void handleIncomingJson(JSONObject json) {
         try {
+            // Handle Call Signals (offer, answer, reject, end)
+            String signalType = json.optString("type", "");
+            if (signalType.startsWith("call_")) {
+                String callType = json.optString("callType", "voice");
+                String callId = json.optString("callId", "");
+                String senderName = json.optString("senderName", "Friend");
+                String senderAvatar = json.optString("senderAvatar", "🌸");
+
+                String myName = (appContext != null) ? UserPreferences.getUserName(appContext) : "";
+                if (senderName.equalsIgnoreCase(myName)) {
+                    return; // ignore own signals
+                }
+
+                if ("call_offer".equals(signalType)) {
+                    if (appContext != null) {
+                        LumaNotificationManager.showIncomingCallNotification(appContext, callType, senderName, senderAvatar, callId);
+                        CallRingtoneManager.getInstance().startIncomingRingtone(appContext);
+
+                        Intent callIntent = new Intent(appContext, com.example.lumachat.CallActivity.class);
+                        callIntent.putExtra("name", senderName);
+                        callIntent.putExtra("avatar", senderAvatar);
+                        callIntent.putExtra("call_type", callType);
+                        callIntent.putExtra("call_id", callId);
+                        callIntent.putExtra("is_incoming", true);
+                        callIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        appContext.startActivity(callIntent);
+                    }
+                } else if ("call_reject".equals(signalType) || "call_end".equals(signalType)) {
+                    CallRingtoneManager.getInstance().stopAll();
+                    if (appContext != null) {
+                        LumaNotificationManager.cancelCallNotification(appContext);
+                    }
+                }
+
+                if (callListener != null) {
+                    mainHandler.post(() -> callListener.onCallSignal(signalType, callType, callId, senderName, senderAvatar));
+                }
+                return;
+            }
+
             String text = json.optString("text", "");
             if (text.isEmpty()) return;
 
-            String convId = json.optString("convId", "chat_peer");
             String senderName = json.optString("senderName", "Peer Friend");
             String senderAvatar = json.optString("senderAvatar", "📱");
             String time = json.optString("time", "Now");
             long timestamp = json.optLong("timestamp", System.currentTimeMillis());
+
+            String myName = (appContext != null) ? UserPreferences.getUserName(appContext) : "";
+            if (senderName.equalsIgnoreCase(myName)) {
+                return; // ignore own echoed message
+            }
 
             // Deduplication key
             String dedupeKey = senderName + "_" + timestamp + "_" + text;
@@ -598,21 +655,43 @@ public class P2PChatManager {
                 lastSeenTimestamp = timestamp;
             }
 
+            // Clean conversation routing: check existing conversation by friend's name!
+            String resolvedConvId;
+            if (appContext != null) {
+                DatabaseHelper db = DatabaseHelper.getInstance(appContext);
+                Conversation existing = db.getConversationByName(senderName);
+                if (existing != null) {
+                    resolvedConvId = existing.getId();
+                } else {
+                    String rawConvId = json.optString("convId", "");
+                    if (!rawConvId.isEmpty() && db.getConversation(rawConvId) != null) {
+                        resolvedConvId = rawConvId;
+                    } else {
+                        resolvedConvId = "chat_" + senderName.toLowerCase().replaceAll("[^a-zA-Z0-9]", "_");
+                        db.insertConversation(new Conversation(
+                                resolvedConvId, senderName, senderAvatar, false, "",
+                                text, time, 0, false, "Online", timestamp
+                        ));
+                    }
+                }
+            } else {
+                resolvedConvId = json.optString("convId", "chat_peer");
+            }
+
             Message incoming = new Message(
-                    0, convId, senderName, senderAvatar, text,
+                    0, resolvedConvId, senderName, senderAvatar, text,
                     timestamp, time, false, "read"
             );
 
             // Persist to local SQLite
             if (appContext != null) {
                 DatabaseHelper db = DatabaseHelper.getInstance(appContext);
-                if (db.getConversation(convId) == null) {
-                    db.insertConversation(new Conversation(
-                            convId, senderName, senderAvatar, false, "",
-                            text, time, 1, false, "Online", timestamp
-                    ));
-                }
                 db.insertMessage(incoming);
+
+                // Show notification if user is not in active chat
+                if (!com.example.lumachat.ChatActivity.isCurrentlyActive(resolvedConvId)) {
+                    LumaNotificationManager.showMessageNotification(appContext, resolvedConvId, senderName, senderAvatar, text);
+                }
             }
 
             mainHandler.post(() -> {
@@ -623,6 +702,41 @@ public class P2PChatManager {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void sendCallSignal(String signalType, String callId, String callType, String senderName, String senderAvatar) {
+        new Thread(() -> {
+            try {
+                JSONObject json = new JSONObject();
+                json.put("type", signalType);
+                json.put("callId", callId);
+                json.put("callType", callType);
+                json.put("senderName", senderName);
+                json.put("senderAvatar", senderAvatar);
+                json.put("timestamp", System.currentTimeMillis());
+
+                if (currentMode == Mode.HTTP_RELAY && !httpBaseUrl.isEmpty()) {
+                    URL sendUrl = new URL(httpBaseUrl + "/send");
+                    HttpURLConnection conn = (HttpURLConnection) sendUrl.openConnection();
+                    conn.setRequestMethod("POST");
+                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                    conn.setRequestProperty("User-Agent", "LumaChat-Android");
+                    conn.setRequestProperty("ngrok-skip-browser-warning", "true");
+                    conn.setDoOutput(true);
+                    conn.setConnectTimeout(6000);
+
+                    OutputStream os = conn.getOutputStream();
+                    os.write(json.toString().getBytes("UTF-8"));
+                    os.flush();
+                    os.close();
+                    conn.getResponseCode();
+                } else if (outWriter != null) {
+                    outWriter.println(json.toString());
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     // ==========================================

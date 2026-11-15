@@ -59,6 +59,25 @@ public class ChatActivity extends AppCompatActivity implements P2PChatManager.On
     private Handler handler = new Handler(Looper.getMainLooper());
     private P2PChatManager p2pManager;
 
+    private static String activeChatConvId = null;
+
+    public static boolean isCurrentlyActive(String convId) {
+        return activeChatConvId != null && activeChatConvId.equals(convId);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        activeChatConvId = conversationId;
+        updateStatusDisplay();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        activeChatConvId = null;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,13 +130,27 @@ public class ChatActivity extends AppCompatActivity implements P2PChatManager.On
         // Voice note quick action
         findViewById(R.id.btnVoiceNote).setOnClickListener(v -> sendVoiceNote());
 
-        // Call Action
+        // Call Actions (Voice & Video)
         findViewById(R.id.btnCallChat).setOnClickListener(v -> {
             Intent callIntent = new Intent(ChatActivity.this, CallActivity.class);
             callIntent.putExtra("name", chatName);
             callIntent.putExtra("avatar", chatAvatar);
+            callIntent.putExtra("call_type", "voice");
+            callIntent.putExtra("is_incoming", false);
             startActivity(callIntent);
         });
+
+        View btnVideo = findViewById(R.id.btnVideoCallChat);
+        if (btnVideo != null) {
+            btnVideo.setOnClickListener(v -> {
+                Intent callIntent = new Intent(ChatActivity.this, CallActivity.class);
+                callIntent.putExtra("name", chatName);
+                callIntent.putExtra("avatar", chatAvatar);
+                callIntent.putExtra("call_type", "video");
+                callIntent.putExtra("is_incoming", false);
+                startActivity(callIntent);
+            });
+        }
 
         // Menu Action
         findViewById(R.id.btnMenuChat).setOnClickListener(v -> showMenuDialog());

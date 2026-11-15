@@ -1,184 +1,396 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center_horizontal"
-    android:background="@color/background"
-    android:padding="24dp">
+    android:background="@color/midnight_navy">
 
-    <!-- Top Call Badge -->
+    <!-- 1. Fullscreen Video Background (Active in Video Call Mode) -->
+    <FrameLayout
+        android:id="@+id/layoutVideoView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone">
+
+        <!-- Simulated Video Feed Frame with ambient gradient -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="#1E1933">
+
+            <TextView
+                android:id="@+id/tvVideoPeerAvatar"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:gravity="center"
+                android:text="🌸"
+                android:textSize="64sp"
+                android:background="@drawable/button_background" />
+
+            <TextView
+                android:id="@+id/tvVideoPeerName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ananya Sharma"
+                android:textColor="@color/card_white"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="📹 HD Video Feed Active"
+                android:textColor="#CDB8F6"
+                android:textSize="12sp"
+                android:layout_marginTop="6dp" />
+        </LinearLayout>
+
+        <!-- Floating PiP Selfie Preview (Top-Right) -->
+        <FrameLayout
+            android:id="@+id/layoutPipSelfie"
+            android:layout_width="100dp"
+            android:layout_height="140dp"
+            android:layout_gravity="top|end"
+            android:layout_margin="20dp"
+            android:layout_marginTop="60dp"
+            android:background="@drawable/card_background"
+            android:elevation="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="#2E284A"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/tvPipAvatar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="⚡"
+                    android:textSize="22sp"
+                    android:background="@drawable/button_background" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="You"
+                    android:textColor="@color/card_white"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="6dp" />
+            </LinearLayout>
+        </FrameLayout>
+    </FrameLayout>
+
+    <!-- 2. Voice Call UI Container -->
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginTop="20dp"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="8dp"
-        android:background="@drawable/input_field">
+        android:id="@+id/layoutVoiceContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="24dp">
 
-        <TextView
+        <!-- Top Security Badge -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="🔒  LumaVoice • Encrypted"
-            android:textSize="12sp"
-            android:textColor="@color/text_secondary" />
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="24dp"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:background="@drawable/input_field">
+
+            <TextView
+                android:id="@+id/tvCallSecurityBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="🔒  LumaVoice • Encrypted"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/midnight_navy" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Big Avatar Circle -->
+        <FrameLayout
+            android:layout_width="140dp"
+            android:layout_height="140dp">
+
+            <TextView
+                android:id="@+id/tvCallAvatar"
+                android:layout_width="140dp"
+                android:layout_height="140dp"
+                android:gravity="center"
+                android:text="🌸"
+                android:textSize="56sp"
+                android:background="@drawable/button_background" />
+        </FrameLayout>
+
+        <!-- Name -->
+        <TextView
+            android:id="@+id/tvCallName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Friend"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="@color/card_white" />
+
+        <!-- Call Status / Timer -->
+        <TextView
+            android:id="@+id/tvCallTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Calling..."
+            android:textSize="16sp"
+            android:textColor="#CDB8F6" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1.2" />
     </LinearLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
-
-    <!-- Avatar -->
-    <TextView
-        android:id="@+id/tvCallAvatar"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
-        android:gravity="center"
-        android:text="A"
-        android:textSize="48sp"
-        android:textStyle="bold"
-        android:textColor="@color/midnight_navy"
-        android:background="@drawable/button_background" />
-
-    <!-- Name -->
-    <TextView
-        android:id="@+id/tvCallName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Ananya Sharma"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:textColor="@color/midnight_navy" />
-
-    <!-- Call Status / Timer -->
-    <TextView
-        android:id="@+id/tvCallTimer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Connecting..."
-        android:textSize="16sp"
-        android:textColor="@color/text_secondary" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1.2" />
-
-    <!-- In-Call Actions -->
+    <!-- 3. Bottom Controls Overlay -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:layout_marginBottom="36dp">
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:padding="24dp">
 
-        <!-- Mute -->
+        <!-- IN-CALL CONTROLS (Active during call) -->
         <LinearLayout
-            android:id="@+id/btnMute"
-            android:layout_width="0dp"
+            android:id="@+id/layoutInCallControls"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
             android:orientation="vertical"
-            android:clickable="true"
-            android:focusable="true">
+            android:gravity="center">
 
-            <TextView
-                android:id="@+id/iconMute"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:text="🎤"
-                android:textSize="22sp"
-                android:background="@drawable/call_btn_round" />
-
-            <TextView
-                android:id="@+id/lblMute"
-                android:layout_width="wrap_content"
+            <!-- Control Buttons Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Mute"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary" />
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="28dp">
+
+                <!-- Mute -->
+                <LinearLayout
+                    android:id="@+id/btnMute"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:id="@+id/iconMute"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:gravity="center"
+                        android:text="🎤"
+                        android:textSize="22sp"
+                        android:background="@drawable/call_btn_round" />
+
+                    <TextView
+                        android:id="@+id/lblMute"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Mute"
+                        android:textSize="11sp"
+                        android:textColor="@color/card_white" />
+                </LinearLayout>
+
+                <!-- Speaker -->
+                <LinearLayout
+                    android:id="@+id/btnSpeaker"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:id="@+id/iconSpeaker"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:gravity="center"
+                        android:text="🔊"
+                        android:textSize="22sp"
+                        android:background="@drawable/call_btn_round" />
+
+                    <TextView
+                        android:id="@+id/lblSpeaker"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Speaker"
+                        android:textSize="11sp"
+                        android:textColor="@color/card_white" />
+                </LinearLayout>
+
+                <!-- Video / Switch Camera -->
+                <LinearLayout
+                    android:id="@+id/btnToggleVideo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:id="@+id/iconVideo"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:gravity="center"
+                        android:text="📹"
+                        android:textSize="22sp"
+                        android:background="@drawable/call_btn_round" />
+
+                    <TextView
+                        android:id="@+id/lblVideo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Video"
+                        android:textSize="11sp"
+                        android:textColor="@color/card_white" />
+                </LinearLayout>
+
+                <!-- Flip Camera -->
+                <LinearLayout
+                    android:id="@+id/btnFlipCamera"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <TextView
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:gravity="center"
+                        android:text="🔄"
+                        android:textSize="22sp"
+                        android:background="@drawable/call_btn_round" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Flip"
+                        android:textSize="11sp"
+                        android:textColor="@color/card_white" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- End Call Button -->
+            <TextView
+                android:id="@+id/btnEndCall"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:gravity="center"
+                android:text="✕"
+                android:textSize="28sp"
+                android:textColor="@color/card_white"
+                android:background="@drawable/call_end_btn"
+                android:clickable="true"
+                android:focusable="true" />
         </LinearLayout>
 
-        <!-- Speaker -->
+        <!-- INCOMING CALL CONTROLS (Accept or Decline) -->
         <LinearLayout
-            android:id="@+id/btnSpeaker"
-            android:layout_width="0dp"
+            android:id="@+id/layoutIncomingControls"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:orientation="horizontal"
             android:gravity="center"
-            android:orientation="vertical"
-            android:clickable="true"
-            android:focusable="true">
+            android:visibility="gone">
 
-            <TextView
-                android:id="@+id/iconSpeaker"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:gravity="center"
-                android:text="🔊"
-                android:textSize="22sp"
-                android:background="@drawable/call_btn_round" />
-
-            <TextView
-                android:id="@+id/lblSpeaker"
-                android:layout_width="wrap_content"
+            <!-- Decline Button -->
+            <LinearLayout
+                android:id="@+id/btnDeclineCall"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Speaker"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary" />
-        </LinearLayout>
-
-        <!-- Keypad -->
-        <LinearLayout
-            android:id="@+id/btnKeypad"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:clickable="true"
-            android:focusable="true">
-
-            <TextView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
+                android:layout_weight="1"
                 android:gravity="center"
-                android:text="⌨"
-                android:textSize="22sp"
-                android:background="@drawable/call_btn_round" />
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true">
 
-            <TextView
-                android:layout_width="wrap_content"
+                <TextView
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:gravity="center"
+                    android:text="✕"
+                    android:textSize="28sp"
+                    android:textColor="@color/card_white"
+                    android:background="@drawable/call_end_btn" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Decline"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="#F44336" />
+            </LinearLayout>
+
+            <!-- Accept Button -->
+            <LinearLayout
+                android:id="@+id/btnAcceptCall"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="Keypad"
-                android:textSize="12sp"
-                android:textColor="@color/text_secondary" />
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:clickable="true"
+                android:focusable="true">
+
+                <TextView
+                    android:layout_width="72dp"
+                    android:layout_height="72dp"
+                    android:gravity="center"
+                    android:text="📞"
+                    android:textSize="28sp"
+                    android:textColor="@color/card_white"
+                    android:background="@drawable/call_answer_btn" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Accept"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="#4CAF50" />
+            </LinearLayout>
         </LinearLayout>
 
     </LinearLayout>
 
-    <!-- End Call Button -->
-    <TextView
-        android:id="@+id/btnEndCall"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:layout_marginBottom="28dp"
-        android:gravity="center"
-        android:text="✕"
-        android:textSize="28sp"
-        android:textColor="@color/card_white"
-        android:background="@drawable/call_end_btn"
-        android:clickable="true"
-        android:focusable="true" />
-
-</LinearLayout>
+</FrameLayout>

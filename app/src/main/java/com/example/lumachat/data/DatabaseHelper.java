@@ -324,6 +324,47 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return conv;
     }
 
+    public Conversation getConversationByName(String name) {
+        if (name == null || name.trim().isEmpty()) return null;
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM conversations WHERE LOWER(TRIM(name)) = LOWER(TRIM(?)) LIMIT 1",
+                new String[]{name.trim()});
+        Conversation conv = null;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                conv = new Conversation(
+                        cursor.getString(cursor.getColumnIndexOrThrow("id")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("name")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("avatar")),
+                        cursor.getInt(cursor.getColumnIndexOrThrow("is_group")) == 1,
+                        cursor.getString(cursor.getColumnIndexOrThrow("members")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("last_message")),
+                        cursor.getString(cursor.getColumnIndexOrThrow("last_time")),
+                        cursor.getInt(cursor.getColumnIndexOrThrow("unread_count")),
+                        cursor.getInt(cursor.getColumnIndexOrThrow("is_pinned")) == 1,
+                        cursor.getString(cursor.getColumnIndexOrThrow("online_status")),
+                        cursor.getLong(cursor.getColumnIndexOrThrow("updated_at"))
+                );
+            }
+            cursor.close();
+        }
+        return conv;
+    }
+
+    public boolean messageExists(String convId, String text, long timestamp) {
+        if (convId == null || text == null) return false;
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT id FROM messages WHERE conversation_id = ? AND message_text = ? AND ABS(timestamp - ?) < 3000 LIMIT 1",
+                new String[]{convId, text, String.valueOf(timestamp)});
+        boolean exists = false;
+        if (cursor != null) {
+            exists = cursor.moveToFirst();
+            cursor.close();
+        }
+        return exists;
+    }
+
     public void insertConversation(Conversation c) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
@@ -412,6 +453,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public long insertMessage(Message m) {
+        if (messageExists(m.getConversationId(), m.getMessageText(), m.getTimestamp())) {
+            // Already saved, prevent duplication
+            return -1;
+        }
         SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put("conversation_id", m.getConversationId());

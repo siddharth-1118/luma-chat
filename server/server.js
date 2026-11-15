@@ -379,6 +379,18 @@ const httpServer = http.createServer((req, res) => {
         req.on('end', () => {
             try {
                 const data = JSON.parse(body);
+
+                // Handle Call Signals (offer, answer, reject, end)
+                if (data.type && data.type.startsWith('call_')) {
+                    const jsonLine = JSON.stringify(data);
+                    broadcastToPhones(jsonLine);
+                    broadcastToWeb('call', data);
+                    logActivity(`📞 [${data.type.toUpperCase()}] from ${data.senderName} (${data.callType || 'voice'})`);
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: true, callDelivered: true }));
+                    return;
+                }
+
                 const text = data.text || '';
                 const timeStr = data.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                 const senderName = data.senderName || 'PC User 💻';

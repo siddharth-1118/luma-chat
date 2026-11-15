@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        com.example.lumachat.notification.LumaNotificationManager.initChannels(this);
+
         tvHeaderAvatar = findViewById(R.id.tvHeaderAvatar);
         tvHeaderGreeting = findViewById(R.id.tvHeaderGreeting);
         tvPersonalSpaceAvatar = findViewById(R.id.tvPersonalSpaceAvatar);
