@@ -101,6 +101,60 @@
             android:textSize="13sp"
             android:singleLine="true" />
 
+        <!-- Live P2P Wi-Fi Card -->
+        <LinearLayout
+            android:id="@+id/cardP2PConnect"
+            android:layout_width="match_parent"
+            android:layout_height="78dp"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/card_background"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
+
+            <TextView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/input_field"
+                android:gravity="center"
+                android:text="🌐"
+                android:textSize="22sp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingStart="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="LIVE TWO-PERSON CHAT"
+                    android:textColor="@color/midnight_navy"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvP2PSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Direct Wi-Fi / Hotspot link between 2 phones"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Link ›"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/midnight_navy" />
+        </LinearLayout>
+
         <!-- Section Heading -->
         <TextView
             android:layout_width="wrap_content"

@@ -56,6 +56,7 @@ public class InboxActivity extends AppCompatActivity {
 
         // New Chat FAB
         findViewById(R.id.btnNewChat).setOnClickListener(v -> showNewChatDialog());
+        findViewById(R.id.btnP2PInbox).setOnClickListener(v -> showP2PDialog());
 
         // Search listener
         etInboxSearch.addTextChangedListener(new TextWatcher() {
@@ -252,6 +253,57 @@ public class InboxActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        dialog.show();
+    }
+
+    private void showP2PDialog() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_p2p_connect, null);
+        TextView tvMyIp = dialogView.findViewById(R.id.tvMyIpAddress);
+        TextView btnHost = dialogView.findViewById(R.id.btnHostServer);
+        EditText etPeerIp = dialogView.findViewById(R.id.etPeerIp);
+        TextView btnConnect = dialogView.findViewById(R.id.btnConnectPeer);
+        TextView tvStatus = dialogView.findViewById(R.id.tvP2PStatus);
+        TextView btnClose = dialogView.findViewById(R.id.btnCloseP2P);
+
+        com.example.lumachat.network.P2PChatManager p2p = com.example.lumachat.network.P2PChatManager.getInstance();
+        p2p.init(this);
+        String myIp = p2p.getLocalIpAddress(this);
+        tvMyIp.setText(myIp + " : " + com.example.lumachat.network.P2PChatManager.DEFAULT_PORT);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        btnHost.setOnClickListener(v -> {
+            p2p.startServer(com.example.lumachat.network.P2PChatManager.DEFAULT_PORT);
+            tvStatus.setText("📡 Hosting on port " + com.example.lumachat.network.P2PChatManager.DEFAULT_PORT + "... Waiting for peer to connect.");
+            btnHost.setText("✓ Hosting Active");
+        });
+
+        btnConnect.setOnClickListener(v -> {
+            String peerIp = etPeerIp.getText().toString().trim();
+            if (peerIp.isEmpty()) {
+                Toast.makeText(this, "Please enter your friend's IP", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            tvStatus.setText("Connecting to " + peerIp + "...");
+            p2p.connectToPeer(peerIp, com.example.lumachat.network.P2PChatManager.DEFAULT_PORT);
+        });
+
+        p2p.setStatusListener((connected, msg) -> {
+            if (tvStatus != null) {
+                tvStatus.setText(msg);
+            }
+            if (connected) {
+                Toast.makeText(this, "Connected! Open chat to talk live with friend.", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
 }

@@ -35,6 +35,7 @@ public class PersonalSpaceActivity extends AppCompatActivity {
 
         findViewById(R.id.btnBackPersonal).setOnClickListener(v -> finish());
         findViewById(R.id.btnEditProfile).setOnClickListener(v -> showEditProfileDialog());
+        findViewById(R.id.menuSwitchPersona).setOnClickListener(v -> showSwitchPersonaDialog());
 
         findViewById(R.id.menuMyActivity).setOnClickListener(v -> {
             startActivity(new Intent(PersonalSpaceActivity.this, ActivityLogActivity.class));
@@ -126,6 +127,47 @@ public class PersonalSpaceActivity extends AppCompatActivity {
             Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
         });
 
+        dialog.show();
+    }
+
+    private void showSwitchPersonaDialog() {
+        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_switch_persona, null);
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create();
+
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        dialogView.findViewById(R.id.personaHarshitha).setOnClickListener(v -> {
+            UserPreferences.setUserName(this, "Harshitha");
+            UserPreferences.setUserAvatar(this, "H");
+            UserPreferences.setUserBio(this, "Making memories, one message at a time ✨");
+            dialog.dismiss();
+            loadProfileData();
+            Toast.makeText(this, "Switched to Harshitha! ✨", Toast.LENGTH_SHORT).show();
+        });
+
+        dialogView.findViewById(R.id.personaAnanya).setOnClickListener(v -> {
+            UserPreferences.setUserName(this, "Ananya Sharma");
+            UserPreferences.setUserAvatar(this, "A");
+            UserPreferences.setUserBio(this, "Living for sunny afternoons and good books ☕");
+            dialog.dismiss();
+            loadProfileData();
+            Toast.makeText(this, "Switched to Ananya Sharma! 🌸", Toast.LENGTH_SHORT).show();
+        });
+
+        dialogView.findViewById(R.id.personaRahul).setOnClickListener(v -> {
+            UserPreferences.setUserName(this, "Rahul");
+            UserPreferences.setUserAvatar(this, "R");
+            UserPreferences.setUserBio(this, "Always curious, building cool ideas 🎧");
+            dialog.dismiss();
+            loadProfileData();
+            Toast.makeText(this, "Switched to Rahul! 🚀", Toast.LENGTH_SHORT).show();
+        });
+
+        dialogView.findViewById(R.id.btnClosePersona).setOnClickListener(v -> dialog.dismiss());
         dialog.show();
     }
 
