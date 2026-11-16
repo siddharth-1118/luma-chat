@@ -66,7 +66,7 @@
             android:layout_height="32dp"
             android:gravity="center"
             android:paddingHorizontal="10dp"
-            android:text="🌐 P2P"
+            android:text="Relay"
             android:textSize="11sp"
             android:textStyle="bold"
             android:textColor="@color/midnight_navy"

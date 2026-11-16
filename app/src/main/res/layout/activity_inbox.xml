@@ -101,11 +101,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="🟢  ONLINE FRIENDS"
-                    android:textSize="11sp"
+                    android:text="Online friends"
+                    android:textSize="12sp"
                     android:textStyle="bold"
-                    android:textColor="@color/midnight_navy"
-                    android:letterSpacing="0.05" />
+                    android:textColor="@color/midnight_navy" />
 
                 <TextView
                     android:id="@+id/tvOnlineCountBadge"
@@ -115,9 +114,8 @@
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="2dp"
                     android:background="@drawable/button_background"
-                    android:text="0 Online"
+                    android:text="0 active"
                     android:textSize="10sp"
-                    android:textStyle="bold"
                     android:textColor="@color/midnight_navy" />
             </LinearLayout>
 

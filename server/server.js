@@ -440,276 +440,474 @@ const httpServer = http.createServer((req, res) => {
         return;
     }
 
-    // Web UI Dashboard
+    // Web UI Dashboard (Unslopped, modern responsive interface)
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(`<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LumaChat Cross-City Relay Console</title>
+<title>LumaChat Relay Dashboard</title>
 <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+        --bg-page: #F8FAFC;
+        --bg-surface: #FFFFFF;
+        --bg-subtle: #F1F5F9;
+        --border-subtle: #E2E8F0;
+        --border-strong: #CBD5E1;
+        --text-primary: #0F172A;
+        --text-secondary: #475569;
+        --text-muted: #94A3B8;
+        --accent: #4F46E5;
+        --accent-hover: #4338CA;
+        --accent-light: #EEF2FF;
+        --status-online: #10B981;
+        --status-online-bg: #ECFDF5;
+        --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
     body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-        background: #FFF9ED;
-        color: #19152F;
-        padding: 24px;
+        font-family: var(--font-stack);
+        background: var(--bg-page);
+        color: var(--text-primary);
+        line-height: 1.5;
+        padding: 32px 16px;
         display: flex;
         justify-content: center;
+        -webkit-font-smoothing: antialiased;
     }
     .container {
         width: 100%;
-        max-width: 920px;
+        max-width: 960px;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 24px;
     }
+    /* Header */
     .header {
-        background: #FFFFFF;
-        padding: 22px 26px;
-        border-radius: 24px;
-        border: 1px solid #E5DDF0;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 16px;
+        padding: 20px 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        box-shadow: 0 4px 16px rgba(205, 184, 246, 0.12);
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .brand-mark {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: var(--accent);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 600;
+    }
+    .brand-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        letter-spacing: -0.01em;
+    }
+    .brand-desc {
+        font-size: 13px;
+        color: var(--text-secondary);
     }
     .status-badge {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background: #EAF7EE;
-        color: #2E7D32;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-weight: bold;
-        font-size: 13px;
+        background: var(--status-online-bg);
+        color: var(--status-online);
+        border: 1px solid #A7F3D0;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 600;
     }
-    .card {
-        background: #FFFFFF;
-        border-radius: 24px;
-        border: 1px solid #E5DDF0;
-        padding: 22px;
-        box-shadow: 0 4px 16px rgba(205, 184, 246, 0.08);
+    .pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--status-online);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: pulse 2s infinite;
     }
-    .info-grid {
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+        70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    /* Grid */
+    .grid-metrics {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 16px;
     }
-    .info-box {
-        background: #F1ECFA;
-        padding: 18px;
-        border-radius: 18px;
-        border: 1px solid #CDB8F6;
-        position: relative;
+    .card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-subtle);
+        border-radius: 16px;
+        padding: 20px 24px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
-    .info-box.ngrok {
-        background: #FEF3F0;
-        border-color: #F4B9A9;
-    }
-    .info-label { font-size: 11px; font-weight: bold; color: #77718A; letter-spacing: 0.5px; }
-    .info-val { font-size: 17px; font-weight: bold; margin-top: 6px; color: #19152F; word-break: break-all; }
-    .copy-btn {
-        margin-top: 10px;
-        padding: 6px 14px;
-        background: #FFFFFF;
-        border: 1px solid #CDB8F6;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: bold;
-        cursor: pointer;
-        color: #7C5CBF;
-        transition: all 0.2s ease;
-    }
-    .copy-btn:hover { background: #7C5CBF; color: #FFF; }
-
-    /* Users Tray */
-    .user-list {
+    .metric-card {
         display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 10px;
+        flex-direction: column;
+        justify-content: space-between;
     }
-    .user-pill {
-        display: inline-flex;
+    .metric-header {
+        display: flex;
         align-items: center;
-        gap: 10px;
-        background: #F1ECFA;
-        border: 1px solid #CDB8F6;
-        padding: 8px 16px;
-        border-radius: 30px;
-        font-size: 13px;
-        color: #19152F;
-        transition: transform 0.2s;
+        justify-content: space-between;
+        margin-bottom: 12px;
     }
-    .user-pill:hover { transform: scale(1.03); }
-    .user-avatar-circle {
-        width: 34dp;
-        height: 34dp;
-        border-radius: 50%;
-        background: #FFFFFF;
+    .metric-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+    .metric-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        background: var(--bg-subtle);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 18px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        color: var(--text-secondary);
     }
-    .online-dot {
-        width: 8px;
-        height: 8px;
-        background: #4CAF50;
+    .metric-value {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        word-break: break-all;
+        margin-bottom: 12px;
+    }
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-subtle);
+        color: var(--text-secondary);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        align-self: flex-start;
+    }
+    .btn-secondary:hover {
+        background: var(--border-subtle);
+        color: var(--text-primary);
+    }
+    /* User Directory */
+    .section-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 4px;
+    }
+    .section-subtitle {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+    }
+    .user-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .user-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-subtle);
+        padding: 6px 14px 6px 8px;
+        border-radius: 9999px;
+        font-size: 13px;
+        color: var(--text-primary);
+    }
+    .user-chip-avatar {
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
+        background: #FFFFFF;
+        border: 1px solid var(--border-strong);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
     }
-
-    .chat-box {
+    .user-chip-meta {
+        display: flex;
+        flex-direction: column;
+    }
+    .user-chip-name {
+        font-weight: 500;
+        line-height: 1.2;
+    }
+    .user-chip-bio {
+        font-size: 11px;
+        color: var(--text-secondary);
+    }
+    .empty-state {
+        color: var(--text-muted);
+        font-size: 13px;
+        padding: 12px 0;
+    }
+    /* Chat stream */
+    .chat-stream {
         height: 320px;
         overflow-y: auto;
         padding: 16px;
-        background: #FFF9ED;
-        border-radius: 18px;
-        border: 1px solid #E5DDF0;
+        background: var(--bg-subtle);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
         display: flex;
         flex-direction: column;
         gap: 12px;
     }
     .bubble {
-        max-width: 75%;
+        max-width: 70%;
         padding: 10px 14px;
-        border-radius: 18px;
-        font-size: 14px;
-        line-height: 1.4;
+        border-radius: 12px;
+        font-size: 13px;
+        line-height: 1.45;
+        position: relative;
     }
-    .bubble.phone {
+    .bubble.incoming {
         align-self: flex-start;
         background: #FFFFFF;
-        border: 1px solid #E5DDF0;
-        border-bottom-left-radius: 4px;
+        border: 1px solid var(--border-subtle);
+        color: var(--text-primary);
     }
-    .bubble.pc {
+    .bubble.outgoing {
         align-self: flex-end;
-        background: #D7C5F9;
-        color: #19152F;
-        border-bottom-right-radius: 4px;
+        background: var(--accent);
+        color: #FFFFFF;
     }
-    .bubble-meta {
+    .bubble-author {
+        font-size: 11px;
+        font-weight: 600;
+        margin-bottom: 2px;
+        opacity: 0.9;
+    }
+    .bubble-time {
         font-size: 10px;
-        color: #77718A;
         margin-top: 4px;
+        opacity: 0.65;
         text-align: right;
     }
+    /* Composer */
     .composer {
         display: flex;
         gap: 10px;
         margin-top: 14px;
     }
-    input[type="text"] {
+    .composer input {
         flex: 1;
-        padding: 12px 18px;
-        border-radius: 16px;
-        border: 1px solid #CDB8F6;
-        background: #F1ECFA;
-        font-size: 14px;
-        color: #19152F;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--border-strong);
+        background: #FFFFFF;
+        font-size: 13px;
+        color: var(--text-primary);
+        font-family: inherit;
         outline: none;
+        transition: border-color 0.15s ease;
     }
-    button[type="submit"] {
-        padding: 12px 24px;
-        border-radius: 16px;
-        border: 1px solid #F4B9A9;
-        background: linear-gradient(90deg, #CDB8F6, #F4B9A9);
-        color: #19152F;
-        font-weight: bold;
-        font-size: 14px;
+    .composer input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.12);
+    }
+    .btn-primary {
+        background: var(--accent);
+        color: #FFFFFF;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-size: 13px;
+        font-weight: 500;
         cursor: pointer;
-        transition: opacity 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: background-color 0.15s ease;
     }
-    button[type="submit"]:hover { opacity: 0.9; }
-    .logs {
-        font-family: monospace;
+    .btn-primary:hover {
+        background: var(--accent-hover);
+    }
+    /* Terminal logs */
+    .terminal-box {
+        background: #090D16;
+        color: #94A3B8;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         font-size: 12px;
-        background: #19152F;
-        color: #E9DFFC;
-        padding: 14px;
-        border-radius: 16px;
-        height: 120px;
+        padding: 16px;
+        border-radius: 12px;
+        height: 140px;
         overflow-y: auto;
+        line-height: 1.6;
+    }
+    .terminal-line { margin-bottom: 4px; }
+    .terminal-line .time { color: #64748B; margin-right: 8px; }
+    .terminal-line .tag { color: #38BDF8; margin-right: 6px; }
+
+    /* Toast */
+    #toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        background: #0F172A;
+        color: #FFFFFF;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        opacity: 0;
+        transform: translateY(12px);
+        transition: all 0.2s ease;
+        pointer-events: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    #toast.show {
+        opacity: 1;
+        transform: translateY(0);
     }
 </style>
 </head>
 <body>
 
 <div class="container">
-    <div class="header">
-        <div>
-            <h2>✨ LumaChat Relay Server &amp; User Directory</h2>
-            <p style="font-size: 12px; color: #77718A; margin-top: 4px;">Live Discovery of Connected Friends Across Cities</p>
+    <!-- Header -->
+    <header class="header">
+        <div class="brand">
+            <div class="brand-mark">L</div>
+            <div>
+                <h1 class="brand-title">LumaChat Relay</h1>
+                <p class="brand-desc">Cross-city discovery and messaging console</p>
+            </div>
         </div>
-        <div class="status-badge">● SERVER ACTIVE</div>
-    </div>
+        <div class="status-badge">
+            <span class="pulse-dot"></span>
+            <span>Relay active</span>
+        </div>
+    </header>
 
-    <div class="info-grid">
-        <div class="info-box ngrok">
-            <div class="info-label">🌍 PUBLIC NGROK URL (FOR OTHER CITIES)</div>
-            <div class="info-val" id="ngrokDisplay">${activeNgrokUrl || 'Loading Ngrok URL...'}</div>
-            <button class="copy-btn" onclick="copyText(document.getElementById('ngrokDisplay').innerText)">📋 Copy Cloud URL</button>
-            <p style="font-size: 11px; color: #9A5A4A; margin-top: 6px;">Share this URL with friends in any city!</p>
+    <!-- Metrics Grid -->
+    <section class="grid-metrics">
+        <div class="card metric-card">
+            <div>
+                <div class="metric-header">
+                    <span class="metric-label">Public cloud URL</span>
+                    <div class="metric-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+                    </div>
+                </div>
+                <div class="metric-value" id="ngrokDisplay">${activeNgrokUrl || 'Tunnel initializing...'}</div>
+            </div>
+            <button class="btn-secondary" onclick="copyValue(document.getElementById('ngrokDisplay').innerText, 'Cloud URL copied')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy URL
+            </button>
         </div>
-        <div class="info-box">
-            <div class="info-label">🏠 LOCAL WI-FI IP (FOR SAME HOUSE/ROOM)</div>
-            <div class="info-val">${primaryIp}:${TCP_PORT}</div>
-            <button class="copy-btn" onclick="copyText('${primaryIp}:${TCP_PORT}')">📋 Copy Local IP</button>
-            <p style="font-size: 11px; color: #77718A; margin-top: 6px;">Use when phones are on same Wi-Fi</p>
-        </div>
-        <div class="info-box">
-            <div class="info-label">👥 ONLINE USERS ACTIVE</div>
-            <div class="info-val" id="clientCount">0 User(s) Online</div>
-            <p style="font-size: 11px; color: #77718A; margin-top: 6px;">Registered users currently online</p>
-        </div>
-    </div>
 
-    <!-- Active Connected Users Directory -->
-    <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3>🟢 Live Connected Users Directory</h3>
-            <span style="font-size: 12px; color: #77718A;" id="userCountBadge">0 registered</span>
+        <div class="card metric-card">
+            <div>
+                <div class="metric-header">
+                    <span class="metric-label">Local network address</span>
+                    <div class="metric-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+                    </div>
+                </div>
+                <div class="metric-value">${primaryIp}:${TCP_PORT}</div>
+            </div>
+            <button class="btn-secondary" onclick="copyValue('${primaryIp}:${TCP_PORT}', 'Local IP copied')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                Copy address
+            </button>
         </div>
-        <p style="font-size: 12px; color: #77718A; margin-top: 4px;">Every person who installs the app and connects appears here with their chosen profile name and avatar!</p>
-        
+
+        <div class="card metric-card">
+            <div>
+                <div class="metric-header">
+                    <span class="metric-label">Online participants</span>
+                    <div class="metric-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                </div>
+                <div class="metric-value" id="clientCount">0 participants online</div>
+            </div>
+            <span style="font-size: 12px; color: var(--text-secondary);">Phones and desktop clients</span>
+        </div>
+    </section>
+
+    <!-- User Directory -->
+    <section class="card">
+        <div class="section-title">
+            <span>Online participants</span>
+            <span style="font-size: 12px; color: var(--text-muted);" id="userCountBadge">0 active</span>
+        </div>
+        <p class="section-subtitle">Devices currently connected to this relay</p>
         <div class="user-list" id="userListContainer">
-            <div style="color: #77718A; font-size: 13px; padding: 8px;">No users currently online. Open LumaChat on phone and tap Connect!</div>
+            <div class="empty-state">No participants online. Open the app on mobile or desktop to connect.</div>
         </div>
-    </div>
+    </section>
 
-    <!-- Live Test Chat with Phones -->
-    <div class="card">
-        <h3 style="margin-bottom: 8px;">💬 Live Chat Feed</h3>
-        <p style="font-size: 12px; color: #77718A; margin-bottom: 12px;">Send and receive real-time messages directly with connected phones right from this browser tab!</p>
+    <!-- Live Test Chat Stream -->
+    <section class="card">
+        <div class="section-title">
+            <span>Live message stream</span>
+        </div>
+        <p class="section-subtitle">Real-time chat feed across mobile phones and desktop clients</p>
         
-        <div class="chat-box" id="chatBox">
-            <div class="bubble phone">
-                <strong>✨ LumaChat Relay</strong><br>
-                Server initialized and ready! Connect your phone using the Cloud URL or Local IP above.
-                <div class="bubble-meta">System</div>
+        <div class="chat-stream" id="chatBox">
+            <div class="bubble incoming">
+                <div class="bubble-author">Relay System</div>
+                Relay initialized. Devices connected to the cloud URL or local address can communicate instantly.
+                <div class="bubble-time">System</div>
             </div>
         </div>
 
-        <form class="composer" onsubmit="sendFromPc(event)">
-            <input type="text" id="pcInput" placeholder="Type a message to phones across all cities..." autocomplete="off">
-            <button type="submit">Send Message ➤</button>
+        <form class="composer" onsubmit="sendFromWeb(event)">
+            <input type="text" id="pcInput" placeholder="Send a message to all devices..." autocomplete="off">
+            <button type="submit" class="btn-primary">
+                Send
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
         </form>
-    </div>
+    </section>
 
-    <!-- Server Activity Log -->
-    <div class="card">
-        <h4 style="margin-bottom: 8px;">📋 Relay Activity Logs</h4>
-        <div class="logs" id="logBox">
-            <div>[Ready] User Directory &amp; TCP Socket Server listening on port ${TCP_PORT}...</div>
-            <div>[Ready] HTTP / SSE Cloud Server listening on port ${HTTP_PORT}...</div>
+    <!-- Logs Box -->
+    <section class="card">
+        <div class="section-title">
+            <span>Activity logs</span>
         </div>
-    </div>
+        <p class="section-subtitle">Relay socket events and traffic telemetry</p>
+        <div class="terminal-box" id="logBox">
+            <div class="terminal-line"><span class="time">[System]</span><span class="tag">TCP</span> Socket server listening on port ${TCP_PORT}</div>
+            <div class="terminal-line"><span class="time">[System]</span><span class="tag">HTTP</span> Event stream and REST API active on port ${HTTP_PORT}</div>
+        </div>
+    </section>
 </div>
+
+<div id="toast"></div>
 
 <script>
     const chatBox = document.getElementById('chatBox');
@@ -719,64 +917,71 @@ const httpServer = http.createServer((req, res) => {
     const userListContainer = document.getElementById('userListContainer');
     const pcInput = document.getElementById('pcInput');
     const ngrokDisplay = document.getElementById('ngrokDisplay');
+    const toast = document.getElementById('toast');
 
     const evtSource = new EventSource('/events');
 
     evtSource.addEventListener('clientsCount', (e) => {
-        const data = JSON.parse(e.data);
-        if (data.ngrokUrl) {
-            ngrokDisplay.textContent = data.ngrokUrl;
-        }
+        try {
+            const data = JSON.parse(e.data);
+            if (data.ngrokUrl) ngrokDisplay.textContent = data.ngrokUrl;
+        } catch (_) {}
     });
 
     evtSource.addEventListener('user_list', (e) => {
-        const data = JSON.parse(e.data);
-        renderUserList(data.users || []);
+        try {
+            const data = JSON.parse(e.data);
+            renderUserList(data.users || []);
+        } catch (_) {}
     });
 
     function renderUserList(users) {
-        clientCount.textContent = users.length + ' User(s) Online';
-        userCountBadge.textContent = users.length + ' registered online';
+        clientCount.textContent = users.length + ' participant' + (users.length === 1 ? '' : 's') + ' online';
+        userCountBadge.textContent = users.length + ' active';
         
         if (users.length === 0) {
-            userListContainer.innerHTML = '<div style="color: #77718A; font-size: 13px; padding: 8px;">No users currently online. Open LumaChat on phone and tap Connect!</div>';
+            userListContainer.innerHTML = '<div class="empty-state">No participants online. Open the app on mobile or desktop to connect.</div>';
             return;
         }
 
         userListContainer.innerHTML = '';
         users.forEach(u => {
-            const pill = document.createElement('div');
-            pill.className = 'user-pill';
-            pill.innerHTML = '<div class="online-dot"></div>' +
-                             '<div style="font-size: 18px;">' + (u.avatar || '🌸') + '</div>' +
-                             '<div>' +
-                                 '<strong>' + escapeHtml(u.name) + '</strong>' +
-                                 (u.bio ? '<div style="font-size: 11px; color: #77718A;">' + escapeHtml(u.bio) + '</div>' : '') +
+            const chip = document.createElement('div');
+            chip.className = 'user-chip';
+            chip.innerHTML = '<div class="user-chip-avatar">' + (u.avatar || '●') + '</div>' +
+                             '<div class="user-chip-meta">' +
+                                 '<span class="user-chip-name">' + escapeHtml(u.name || 'Friend') + '</span>' +
+                                 (u.bio ? '<span class="user-chip-bio">' + escapeHtml(u.bio) + '</span>' : '') +
                              '</div>';
-            userListContainer.appendChild(pill);
+            userListContainer.appendChild(chip);
         });
     }
 
     evtSource.addEventListener('log', (e) => {
-        const data = JSON.parse(e.data);
-        const div = document.createElement('div');
-        div.textContent = data.entry;
-        logBox.appendChild(div);
-        logBox.scrollTop = logBox.scrollHeight;
+        try {
+            const data = JSON.parse(e.data);
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.textContent = data.entry;
+            logBox.appendChild(line);
+            logBox.scrollTop = logBox.scrollHeight;
+        } catch (_) {}
     });
 
     evtSource.addEventListener('chat', (e) => {
-        const msg = JSON.parse(e.data);
-        const isFromPc = msg.senderName && msg.senderName.includes('PC');
-        
-        const bubble = document.createElement('div');
-        bubble.className = 'bubble ' + (isFromPc ? 'pc' : 'phone');
-        bubble.innerHTML = '<strong>' + (msg.senderAvatar || '') + ' ' + (msg.senderName || 'Phone') + '</strong><br>' + 
-                           escapeHtml(msg.text) + 
-                           '<div class="bubble-meta">' + (msg.time || '') + '</div>';
-        
-        chatBox.appendChild(bubble);
-        chatBox.scrollTop = chatBox.scrollHeight;
+        try {
+            const msg = JSON.parse(e.data);
+            const isSelf = msg.senderName && msg.senderName.includes('Web Console');
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble ' + (isSelf ? 'outgoing' : 'incoming');
+            bubble.innerHTML = '<div class="bubble-author">' + escapeHtml(msg.senderName || 'Participant') + '</div>' + 
+                               '<div>' + escapeHtml(msg.text || '') + '</div>' + 
+                               '<div class="bubble-time">' + (msg.time || '') + '</div>';
+            
+            chatBox.appendChild(bubble);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (_) {}
     });
 
     function escapeHtml(text) {
@@ -785,7 +990,7 @@ const httpServer = http.createServer((req, res) => {
         return div.innerHTML;
     }
 
-    async function sendFromPc(e) {
+    async function sendFromWeb(e) {
         e.preventDefault();
         const text = pcInput.value.trim();
         if (!text) return;
@@ -795,20 +1000,27 @@ const httpServer = http.createServer((req, res) => {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
-                    senderName: 'PC User 💻',
+                    senderName: 'Web Console',
                     senderAvatar: '💻',
                     text: text 
                 })
             });
             pcInput.value = '';
         } catch (err) {
-            alert('Error sending message: ' + err.message);
+            showToast('Failed to deliver message');
         }
     }
 
-    function copyText(txt) {
-        navigator.clipboard.writeText(txt);
-        alert('Copied to clipboard: ' + txt);
+    function copyValue(text, message) {
+        if (!text) return;
+        navigator.clipboard.writeText(text);
+        showToast(message || 'Copied to clipboard');
+    }
+
+    function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2200);
     }
 </script>
 </body>

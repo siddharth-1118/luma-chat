@@ -120,9 +120,9 @@ public class InboxActivity extends AppCompatActivity {
         onlineUsersContainer.removeAllViews();
 
         if (users == null || users.isEmpty()) {
-            tvOnlineCountBadge.setText("0 Online");
+            tvOnlineCountBadge.setText("0 active");
             TextView prompt = new TextView(this);
-            prompt.setText("🌐 Tap to Connect to Server & Discover Friends");
+            prompt.setText("Tap to connect to relay server");
             prompt.setTextSize(11);
             prompt.setTextColor(Color.parseColor("#7C5CBF"));
             prompt.setBackgroundResource(R.drawable.input_field);
@@ -132,7 +132,7 @@ public class InboxActivity extends AppCompatActivity {
             return;
         }
 
-        tvOnlineCountBadge.setText(users.size() + " Online");
+        tvOnlineCountBadge.setText(users.size() + " active");
 
         for (OnlineUser user : users) {
             View card = createOnlineUserCard(user);

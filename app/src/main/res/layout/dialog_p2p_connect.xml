@@ -55,7 +55,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="YOUR DEVICE IP (Share with friend):"
+            android:text="Device local address"
             android:textSize="11sp"
             android:textStyle="bold"
             android:textColor="@color/text_secondary" />
@@ -66,7 +66,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:text="192.168.1.15 : 8888"
-            android:textSize="17sp"
+            android:textSize="16sp"
             android:textStyle="bold"
             android:textColor="@color/midnight_navy" />
 
@@ -76,7 +76,7 @@
             android:layout_height="38dp"
             android:layout_marginTop="10dp"
             android:gravity="center"
-            android:text="📡  Start Hosting on This Phone"
+            android:text="Host on this device"
             android:textColor="@color/midnight_navy"
             android:textSize="12sp"
             android:textStyle="bold"
@@ -89,15 +89,14 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginVertical="12dp"
-        android:text="— OR CONNECT ACROSS CITIES / WI-FI —"
-        android:textSize="10sp"
-        android:textStyle="bold"
+        android:text="or connect to remote server"
+        android:textSize="11sp"
         android:textColor="@color/text_secondary" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ENTER CLOUD URL (NGROK) OR FRIEND'S IP:"
+        android:text="Cloud URL or peer IP"
         android:textSize="10sp"
         android:textStyle="bold"
         android:layout_marginBottom="6dp"
@@ -120,8 +119,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="💡 For other cities: Paste your Ngrok Cloud URL\n🏠 For same Wi-Fi: Enter your PC/phone IP (e.g. 10.3.117.48:8888)"
-        android:textSize="10sp"
+        android:text="For other cities: Enter Ngrok cloud URL\nFor local Wi-Fi: Enter host IP and port"
+        android:textSize="11sp"
         android:textColor="@color/text_secondary"
         android:lineSpacingExtra="2dp" />
 
@@ -131,7 +130,7 @@
         android:layout_height="42dp"
         android:layout_marginTop="10dp"
         android:gravity="center"
-        android:text="🔗  Connect to Chat Relay"
+        android:text="Connect to relay"
         android:textColor="@color/midnight_navy"
         android:textSize="13sp"
         android:textStyle="bold"
