@@ -115,10 +115,48 @@
         android:textSize="12sp"
         android:singleLine="true" />
 
+    <!-- 1-Tap Presets -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="6dp">
+
+        <TextView
+            android:id="@+id/btnPresetCloud"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Cloud (Ngrok)"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/midnight_navy"
+            android:background="@drawable/button_background"
+            android:layout_marginEnd="4dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/btnPresetWifi"
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="PC Wi-Fi (8080)"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/midnight_navy"
+            android:background="@drawable/button_background"
+            android:layout_marginStart="4dp"
+            android:clickable="true"
+            android:focusable="true" />
+    </LinearLayout>
+
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="6dp"
         android:text="For other cities: Enter Ngrok cloud URL\nFor local Wi-Fi: Enter host IP and port"
         android:textSize="11sp"
         android:textColor="@color/text_secondary"

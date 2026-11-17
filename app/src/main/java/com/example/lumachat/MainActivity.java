@@ -102,6 +102,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateUI();
+
+        // Auto-connect to relay server on startup so user is immediately online
+        com.example.lumachat.network.P2PChatManager p2p = com.example.lumachat.network.P2PChatManager.getInstance();
+        p2p.init(this);
+        if (!p2p.isConnected()) {
+            String lastSaved = p2p.getLastSavedAddress(this);
+            if (lastSaved != null && !lastSaved.trim().isEmpty()) {
+                p2p.connectToPeer(lastSaved, com.example.lumachat.network.P2PChatManager.DEFAULT_PORT);
+            }
+        }
     }
 
     private void updateUI() {
@@ -147,6 +157,25 @@ public class MainActivity extends AppCompatActivity {
         String lastSaved = p2p.getLastSavedAddress(this);
         if (lastSaved != null && !lastSaved.isEmpty()) {
             etPeerIp.setText(lastSaved);
+        }
+
+        TextView btnPresetCloud = dialogView.findViewById(R.id.btnPresetCloud);
+        TextView btnPresetWifi = dialogView.findViewById(R.id.btnPresetWifi);
+        if (btnPresetCloud != null) {
+            btnPresetCloud.setOnClickListener(v -> {
+                String cloudUrl = "https://nancey-pandemoniacal-candra.ngrok-free.dev";
+                etPeerIp.setText(cloudUrl);
+                tvStatus.setText("Connecting to Cloud Relay...");
+                p2p.connectToPeer(cloudUrl, com.example.lumachat.network.P2PChatManager.DEFAULT_PORT);
+            });
+        }
+        if (btnPresetWifi != null) {
+            btnPresetWifi.setOnClickListener(v -> {
+                String wifiUrl = "http://10.9.151.112:8080";
+                etPeerIp.setText(wifiUrl);
+                tvStatus.setText("Connecting to PC Wi-Fi Relay...");
+                p2p.connectToPeer(wifiUrl, com.example.lumachat.network.P2PChatManager.DEFAULT_PORT);
+            });
         }
 
         androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)

@@ -445,6 +445,25 @@ public class InboxActivity extends AppCompatActivity {
             etPeerIp.setText(lastSaved);
         }
 
+        TextView btnPresetCloud = dialogView.findViewById(R.id.btnPresetCloud);
+        TextView btnPresetWifi = dialogView.findViewById(R.id.btnPresetWifi);
+        if (btnPresetCloud != null) {
+            btnPresetCloud.setOnClickListener(v -> {
+                String cloudUrl = "https://nancey-pandemoniacal-candra.ngrok-free.dev";
+                etPeerIp.setText(cloudUrl);
+                tvStatus.setText("Connecting to Cloud Relay...");
+                p2p.connectToPeer(cloudUrl, com.example.lumachat.network.P2PChatManager.DEFAULT_PORT);
+            });
+        }
+        if (btnPresetWifi != null) {
+            btnPresetWifi.setOnClickListener(v -> {
+                String wifiUrl = "http://10.9.151.112:8080";
+                etPeerIp.setText(wifiUrl);
+                tvStatus.setText("Connecting to PC Wi-Fi Relay...");
+                p2p.connectToPeer(wifiUrl, com.example.lumachat.network.P2PChatManager.DEFAULT_PORT);
+            });
+        }
+
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setView(dialogView)
                 .create();

@@ -228,7 +228,8 @@ public class P2PChatManager {
 
         boolean isHttp = input.startsWith("http://") || input.startsWith("https://")
                 || input.contains("ngrok") || input.contains(".dev") || input.contains(".app")
-                || input.contains(".page") || (input.contains(".") && !input.matches("^[0-9.:]+$") && !input.contains(":"));
+                || input.contains(".page") || input.endsWith(":8080") || input.contains(":8080/")
+                || (input.contains(".") && !input.matches("^[0-9.:]+$") && !input.contains(":"));
 
         if (isHttp) {
             connectHttpRelay(input);
@@ -244,7 +245,11 @@ public class P2PChatManager {
         new Thread(() -> {
             String url = input;
             if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                url = "https://" + url;
+                if (url.matches("^[0-9.]+(:[0-9]+)?$") || url.startsWith("localhost")) {
+                    url = "http://" + url;
+                } else {
+                    url = "https://" + url;
+                }
             }
             if (url.endsWith("/")) {
                 url = url.substring(0, url.length() - 1);
@@ -630,6 +635,57 @@ public class P2PChatManager {
 
                 if (callListener != null) {
                     mainHandler.post(() -> callListener.onCallSignal(signalType, callType, callId, senderName, senderAvatar));
+                }
+                return;
+            }
+
+            // Handle Direct P2P Registration packet from connecting peer
+            if ("register".equals(signalType)) {
+                String uId = json.optString("userId", "peer_" + System.currentTimeMillis());
+                String uName = json.optString("name", "Friend");
+                String uAvatar = json.optString("avatar", "📱");
+                String uBio = json.optString("bio", "Connected via direct link");
+
+                OnlineUser peer = new OnlineUser(uId, uName, uAvatar, uBio, "online", true, System.currentTimeMillis());
+                synchronized (onlineUsers) {
+                    boolean exists = false;
+                    for (int i = 0; i < onlineUsers.size(); i++) {
+                        if (onlineUsers.get(i).getUserId().equals(uId)) {
+                            onlineUsers.set(i, peer);
+                            exists = true;
+                            break;
+                        }
+                    }
+                    if (!exists) {
+                        onlineUsers.add(peer);
+                    }
+                }
+                final List<OnlineUser> copyList;
+                synchronized (onlineUsers) {
+                    copyList = new ArrayList<>(onlineUsers);
+                }
+                mainHandler.post(() -> {
+                    if (usersListener != null) {
+                        usersListener.onUsersUpdated(copyList);
+                    }
+                });
+
+                // In direct TCP server mode, send our own profile back to the connecting peer
+                if (currentMode == Mode.SERVER_TCP && outWriter != null && appContext != null) {
+                    try {
+                        JSONObject myProf = new JSONObject();
+                        myProf.put("type", "user_list");
+                        JSONArray arr = new JSONArray();
+                        JSONObject meObj = new JSONObject();
+                        meObj.put("userId", UserPreferences.getUserId(appContext));
+                        meObj.put("name", UserPreferences.getUserName(appContext));
+                        meObj.put("avatar", UserPreferences.getUserAvatar(appContext));
+                        meObj.put("bio", UserPreferences.getUserBio(appContext));
+                        meObj.put("isOnline", true);
+                        arr.put(meObj);
+                        myProf.put("users", arr);
+                        outWriter.println(myProf.toString());
+                    } catch (Exception ignored) {}
                 }
                 return;
             }

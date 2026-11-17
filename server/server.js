@@ -155,6 +155,7 @@ const tcpServer = net.createServer((socket) => {
                     logActivity(`👤 [TCP Online] ${msg.name} (${msg.avatar}) registered!`);
                     const usersList = getActiveUsersList();
                     broadcastToWeb('user_list', { users: usersList });
+                    broadcastToPhones(JSON.stringify({ type: 'user_list', users: usersList }));
                     socket.write(JSON.stringify({ type: 'user_list', users: usersList }) + '\n');
                     continue;
                 }
