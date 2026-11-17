@@ -1,18 +1,3 @@
-#!/usr/bin/env python3
-"""
-=============================================================================
-LUMACHAT DESKTOP - PROFESSIONAL TKINTER CLIENT
-=============================================================================
-Cross-platform desktop messaging and call-signaling client for LumaChat.
-Communicates with the Node.js Relay Server and Ngrok Cloud Tunnel.
-Supports:
-  - Real-time peer-to-peer and relayed messaging with Android devices
-  - Live online participant discovery across networks and cities
-  - Voice and video call signaling with local audio ringtones
-  - Low-latency SSE / polling fallback networking
-=============================================================================
-"""
-
 import os
 import sys
 import json
@@ -122,10 +107,6 @@ class LumaChatDesktopApp:
                 json.dump(self.profile, f, indent=2, ensure_ascii=False)
         except Exception as e:
             print("[Config error]", e)
-
-    # =========================================================================
-    # UI Layout & Components
-    # =========================================================================
     def setup_styles(self):
         self.style = ttk.Style()
         self.style.theme_use("clam")
@@ -322,7 +303,7 @@ class LumaChatDesktopApp:
 
         send_btn = tk.Button(row, text="Send", font=(THEME["font_main"], 9, "bold"),
                              bg=THEME["accent"], fg="#FFFFFF", activebackground=THEME["accent_hover"],
-                             activeforeground="#FFFFFF", relief=tk.FLAT, padx=16, ipady=4, cursor="hand2",
+                             activeforeground="#FFFFFF", relief=tk.FLAT, padx=16, pady=6, cursor="hand2",
                              command=self.send_message)
         send_btn.pack(side=tk.RIGHT)
 
